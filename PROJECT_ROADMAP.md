@@ -6,12 +6,14 @@ Living checklist for the final project. Update the **Current step** marker as we
 
 ## Current step
 
-> **Step 5 — Training metrics & graphs**
+> **Step 6b — Stage metrics + short DQN smoke**
 >
-> Status: **in progress** — helpers + notebook cell added; run the Step 5 cell to write PNGs
+> Status: **ready to start**
 >
-> **Next:** execute the Step 5 notebook cell (uses `dqn_gray_history` / `dqn_best_history`
-> or a JSON under `graphs/`), confirm the four plots look right, then Step 6 ComplexEnv.
+> **6a DONE.** Grayscale stack, actions `(0..5)`, first-time anti-farm shaping locked
+> (`goal_scale=50`, `step_penalty=0.1`, keep `enter_right_room`). Sanity wiring OK.
+>
+> **Next:** wire stage reach-rates into DQN logs/history, run a short smoke (≈5–10k steps).
 
 ---
 
@@ -24,8 +26,11 @@ Living checklist for the final project. Update the **Current step** marker as we
 | 2 | Baseline wrappers + `BaseAlgorithm` + DQN scaffold | done |
 | 3 | DQN solves `SimpleRoomEnv` | **done** |
 | 4 | Observation pipeline (document / lock) | **done** (SimpleRoom; gray after Exp7) |
-| **5** | **Training graphs & logging** | **← now** |
-| 6 | DQN on `ComplexEnv` (+ shaping) | pending |
+| 5 | Training graphs & logging | **done** |
+| 6a | ComplexEnv: stack + event shaping | **done** |
+| **6b** | **ComplexEnv: stage metrics + short DQN smoke** | **← now** |
+| 6c | ComplexEnv: first real DQN train + graphs/videos | pending |
+| 6d | ComplexEnv: unstick (tuning if 6c stalls) | pending |
 | 7 | Policy-based method (e.g. REINFORCE) | pending |
 | 8 | Actor-critic method (e.g. PPO / A2C) | pending |
 | 9 | Full training results & ComplexEnv stage progress | pending |
@@ -85,7 +90,7 @@ Living checklist for the final project. Update the **Current step** marker as we
 ---
 
 ## Step 4 — Observation preprocessing (final pipeline)
-**Status:** done (SimpleRoom); ComplexEnv when Step 6 starts
+**Status:** done (SimpleRoom); ComplexEnv variant in **6a**
 
 Hard rule: **pixels only** into the network. Getters / positions = shaping & EDA only.
 
@@ -98,20 +103,20 @@ RGB remains a valid alternative; prefer **RGB on ComplexEnv** (color-coded objec
 
 For each env, document and implement:
 - [x] Resolution / resize — `64×64`
-- [x] Color vs grayscale — **grayscale for SimpleRoom** (Exp7); RGB for ComplexEnv later
+- [x] Color vs grayscale — **grayscale for SimpleRoom** (Exp7); **grayscale for ComplexEnv 6a** (user choice)
 - [x] Channel order + normalization — HWC uint8 → NCHW float in DQN
 - [x] Frame stack — no (static room)
 - [x] Final tensor shape — `(64, 64, 1)` → CNN `(B, 1, 64, 64)`
-- [x] Action subset — `{0,1,2}` left/right/forward
+- [x] Action subset — `{0,1,2}` left/right/forward (SimpleRoom); ComplexEnv `(0..5)` in 6a
 - [x] Write this stack clearly in the notebook
-- [ ] Adapt / document ComplexEnv variant when starting Step 6
+- [ ] Adapt / document ComplexEnv variant (**6a** — gray stack in notebook)
 
 Prefer implementing this as real `gym.ObservationWrapper`s (and reuse for all algorithms).
 
 ---
 
 ## Step 5 — Training metrics & graphs
-**Status:** in progress (helpers ready; run notebook cell)
+**Status:** done
 
 Assignment requires (x-axis = training episode; rolling averages OK):
 - [x] Reward / return per episode — `plot_training_history` → `*_return.png`
@@ -122,20 +127,52 @@ Assignment requires (x-axis = training episode; rolling averages OK):
 Also:
 - [x] Helpers to save figures into `graphs/` — `algorithms/plotting.py`
 - [x] Persist history JSON for kernel restarts
-- [ ] Confirm plots from Exp7 / Exp6b history in the notebook
-- [ ] Log hypers + seeds already in `EXPERIMENTS.md` (keep updated)
+- [x] Confirmed plots from Exp7 history (`graphs/dqn_gray_history_*.png`)
+- [x] Hypers + seeds logged in `EXPERIMENTS.md` (keep updated)
 
 ---
 
-## Step 6 — DQN on `ComplexEnv`
-**Status:** pending
+## Step 6 — DQN on `ComplexEnv` (phased)
 
-- [ ] Action subset for the full mission (drop unused `done`; justify kept set)
-- [ ] Legal reward shaping wrapper (event-based OK; **no distance/geometry**)
-- [ ] Train DQN; expect partial progress
-- [ ] Stage metrics: key → door → water → lava → goal (even if goal rarely reached)
+Hard mission: key → door → water → lava → goal. Expect **partial progress** at first.
+Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pass.
+
+### 6a — Env stack & event shaping
+**Status:** done
+
+- [x] Action subset `(0..5)`; grayscale `64×64×1`; first-time anti-farm shaping
+- [x] Locked magnitudes: `goal_scale=50`, `step_penalty=0.1`, keep `enter_right_room=+5`
+- [x] Sanity random rollouts: events fire (key often; door/right rare)
+- [x] Documented in `EXPERIMENTS.md`
+
+### 6b — Stage metrics + short DQN smoke ← **YOU ARE HERE**
+**Status:** ready
+
+- [ ] Log stage reach-rates in training history / printouts (`stage_key` … `stage_goal`)
+- [ ] Short DQN smoke (e.g. 5–10k steps) with SimpleRoom winner hypers as starting point
+- [ ] Confirm *some* early-stage progress (key/door) shows up in logs
+
+**Exit:** metrics wired; smoke does not crash; early stages move (even if goal = 0%).
+
+### 6c — First real train + graphs / videos
+**Status:** pending *(after 6b)*
+
+- [ ] Longer budget (e.g. 50–100k+ steps; adjust after smoke)
+- [ ] Graphs via Step 5 helpers (return / length / success / cum steps + stage curves)
 - [ ] Mid-training + post-training videos
-- [ ] Graphs for ComplexEnv (including cumulative steps)
+- [ ] Identify bottleneck stage for the report
+
+**Exit:** logged run + plots + videos; clear “how far does DQN get?” answer.
+
+### 6d — Unstick (only if 6c stalls)
+**Status:** pending *(optional)*
+
+- [ ] Retune shaping magnitudes / step penalty / `max_steps`
+- [ ] Action or obs tweaks if justified
+- [ ] Hyperparam pass (reuse search tooling) if needed
+- [ ] Document what helped vs what created bad incentives
+
+**Exit:** better stage progress **or** a justified partial-success write-up.
 
 ---
 
@@ -195,7 +232,7 @@ Rules: short clips **partway through training** and **after convergence**, in th
 - [x] Smoke video for early DQN on SimpleRoom (failing)
 - [x] Successful SimpleRoom video (`videos/dqn_simple_room_best.mp4`)
 - [ ] Mid-training + converged videos for each algo worth showing
-- [ ] ComplexEnv progress videos
+- [ ] ComplexEnv progress videos (Step **6c**)
 
 ---
 
@@ -222,9 +259,9 @@ Rules: short clips **partway through training** and **after convergence**, in th
 
 ---
 
-## Immediate next session plan (Step 3)
+## Immediate next session plan (Step 6a)
 
-1. Add success-rate logging to DQN training history.
-2. Run a longer SimpleRoom experiment and plot return / success / length.
-3. Patch whatever is broken (hypers, reward visibility, bugs).
-4. Only when greedy success is clearly high → mark Step 3 done and start Step 4/5 polish, then Step 6.
+1. Implement `ComplexShapingWrapper` (event bonuses + stage latches in `info`).
+2. Build `make_complex_env()`: RGB obs pipeline + action subset + shaping.
+3. Sanity-check events (explorer / scripted) — **no long DQN train**.
+4. Log the design in `EXPERIMENTS.md`, then move to **6b**.

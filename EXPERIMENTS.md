@@ -82,6 +82,22 @@ Plots and figures live in [`graphs/`](graphs/).
   - `mean20` ≈ **48.5–49** (near max shaped return); episodes short / decisive
 - **Notes:** **Step 3 SimpleRoom DQN sanity check: PASSED** (training clearly solved). Keep these as the SimpleRoom baseline going forward.
 
+## Experiment 8 (Step 6a): ComplexEnv stack — shaping locked
+
+- **Date:** 2026-07-17
+- **Goal:** Wire ComplexEnv factory before any long DQN train
+- **Setup:**
+  - Obs: `tile=12 → wall-crop → inset 0.75 → grayscale → 64×64×1`
+  - Actions: `(0..5)` — **no `done`**
+  - Wrapper: `ComplexShapingWrapper` (first-time / per-spawn-tile anti-farm)
+- **Locked rewards:**
+  - `goal_scale=50`, `step_penalty=0.1` (match SimpleRoom)
+  - `key_pickup=+5`, `door_open=+10`, `enter_right_room=+5` — once/episode
+  - `water_pickup=+2` — once per original spawn tile
+  - `lava_extinguish=+5`/tile, `lava_death=-10`
+- **Results:** random 30 eps sanity OK — `key_pickup` 27/30, `door_open` 2/30, `enter_right` 1/30
+- **Notes:** **6a DONE.** Next = 6b stage metrics + short DQN smoke.
+
 ## Experiment 7: Grayscale A/B with Exp6 winner hypers
 
 - **Date:** 2026-07-17
@@ -94,5 +110,5 @@ Plots and figures live in [`graphs/`](graphs/).
   - Eval (20 eps): **success_rate=0.90**, mean_length≈19.3, mean_return≈43.1
   - Video: `videos/dqn_simple_room_gray_exp7.mp4` (11 steps, return 48.9)
 - **Notes:** **Grayscale ≈ RGB** under winner hypers. Exp4 spin was hypers/training, not grayscale itself.
-  Adopt **grayscale** as SimpleRoom default (cheaper `64×64×1`). Keep **RGB** for ComplexEnv (color-coded objects).
+  Adopt **grayscale** as SimpleRoom default (cheaper `64×64×1`). ComplexEnv 6a also starts grayscale (user choice).
 
