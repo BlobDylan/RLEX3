@@ -1,0 +1,33 @@
+---
+description: Follow PROJECT_ROADMAP.md — read current step, scope work, update progress at end
+alwaysApply: true
+---
+
+# Project roadmap workflow
+
+Source of truth: `PROJECT_ROADMAP.md`.
+
+## At the start of every task
+
+1. **Read** `PROJECT_ROADMAP.md` — especially `## Current step` and the matching `## Step N` section.
+2. **Scope** work to that step unless the user explicitly asks to jump ahead or change steps.
+3. **Adapt** the user's request to the current step's exit criteria and checklist (do the smallest change that advances those items).
+4. If the request conflicts with the roadmap (e.g. ComplexEnv while Step 3 is open), say so briefly and either stay on the current step or ask before skipping.
+
+## While working
+
+- Prefer fixes/experiments that unblock the **Current step** exit criteria.
+- Log meaningful runs in `EXPERIMENTS.md` and plots under `graphs/` when the step calls for it.
+- Do not mark a step done until its exit criteria are actually met.
+
+## At the end of every task (required)
+
+Update `PROJECT_ROADMAP.md` before finishing:
+
+1. Refresh **Current step** (status, what changed, next actions).
+2. Tick completed checklist items (`[ ]` → `[x]`) for the step you worked on.
+3. Update the **Progress overview** table status (`pending` / `in progress` / `done` / `partial`) and the `← now` marker.
+4. If exit criteria are met: mark the step **done**, move `← now` to the next step, and rewrite **Current step** for that next step.
+5. If still blocked: keep the same step, note what failed and what to try next.
+
+Do not leave the roadmap stale after a completed coding/experiment turn.
