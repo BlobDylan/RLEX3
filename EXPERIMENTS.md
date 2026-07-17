@@ -53,9 +53,46 @@ Plots and figures live in [`graphs/`](graphs/).
 ## Experiment 5: Exp4 pipeline but RGB
 
 - **Date:** 2026-07-17
-- **Goal:** Fix greedy spin by keeping red agent / green goal channels
-- **Setup:** same as Exp4 but **no grayscale** → `(64, 64, 3)`
+- **Goal:** Keep red agent / green goal channels
+- **Setup:** same as Exp4 but `(64, 64, 3)` — no grayscale
+- **Results:** train similar to Exp4; no clear greedy improvement
+- **Notes:** Freeze obs; try hyperparam search next.
+
+## Experiment 6: Random hyperparam search (8 × 20k)
+
+- **Date:** 2026-07-17
+- **Goal:** Find hypers that produce a non-spinning greedy policy
+- **Setup:** frozen RGB pipeline; Double DQN; seed=0; `n_trials=8`, `steps_per_trial=20_000`
 - **Results:**
-  - Train similar to Exp4: `succ20` peaks ~50–70%, late ~35% at low ε
-  - No clear improvement over gray (user: “didn’t improve anything”)
-- **Notes:** Freeze obs pipeline; next leverage is **model / learning rule**, not more pixel tricks.
+  - Trial 4 winner: greedy **success_rate=0.90**, mean_length≈19.3
+  - Winner hypers: `lr≈2.81e-4`, `γ=0.95`, `batch=128`, `train_freq=1`,
+    `τ=0.001`, `eps_end=0.15`, `eps_decay=20k`, `learning_starts=1k`
+- **Notes:** Led to Exp6b full retrain.
+
+## Experiment 6b: Full 50k retrain with Exp6 winner
+
+- **Date:** 2026-07-17
+- **Goal:** Confirm SimpleRoom sanity check with best hypers
+- **Setup:** RGB pipeline frozen; winner hypers from Exp6 trial 4
+- **Hyperparameters:** `lr=2.81e-4`, `γ=0.95`, `batch=128`, `train_freq=1`, `τ=0.001`,
+  `eps_end=0.15`, `eps_decay=20k`, `learning_starts=1k`, Double DQN
+- **Results:**
+  - Wall time ~**47 min** (MPS)
+  - `succ20` reaches **100% by ~ep 220** and **stays at 100%** through the rest of training
+  - `mean20` ≈ **48.5–49** (near max shaped return); episodes short / decisive
+- **Notes:** **Step 3 SimpleRoom DQN sanity check: PASSED** (training clearly solved). Keep these as the SimpleRoom baseline going forward.
+
+## Experiment 7: Grayscale A/B with Exp6 winner hypers
+
+- **Date:** 2026-07-17
+- **Goal:** Test whether Exp4 gray-spin was hypers vs color; keep RGB winner hypers, switch to grayscale
+- **Setup:** same stack as Exp6b but `GrayscaleWrapper` before resize → `(64, 64, 1)`; **20k** steps
+- **Hyperparameters:** same as Exp6 winner / Exp6b
+- **Results:**
+  - Train: `succ20` → **100%** by ~ep 280 (stable ~95–100% after ~ep 220)
+  - Greedy diagnose: **success**, actions `{0:1, 1:1, 2:9}` (forward-dominant, **no spin**)
+  - Eval (20 eps): **success_rate=0.90**, mean_length≈19.3, mean_return≈43.1
+  - Video: `videos/dqn_simple_room_gray_exp7.mp4` (11 steps, return 48.9)
+- **Notes:** **Grayscale ≈ RGB** under winner hypers. Exp4 spin was hypers/training, not grayscale itself.
+  Adopt **grayscale** as SimpleRoom default (cheaper `64×64×1`). Keep **RGB** for ComplexEnv (color-coded objects).
+
