@@ -6,21 +6,14 @@ Living checklist for the final project. Update the **Current step** marker as we
 
 ## Current step
 
-> **Step 3 — Make DQN solve `SimpleRoomEnv` (sanity check)**
+> **Step 5 — Training graphs & logging**
 >
-> Status: **in progress — freeze obs pipeline; next = model / learning changes**
+> Status: **ready to start**
 >
-> Locked preprocessing (for now):
-> `tile=12 → wall-crop → tile-inset(0.75) → RGB → resize 64` + shaping `+50/−0.1` + actions `(0,1,2)`
+> **Exp7 DONE:** grayscale + winner hypers @ 20k → greedy **90%**, no spin (matches RGB Exp6).
+> SimpleRoom default obs → **`64×64×1` grayscale**. Keep RGB for ComplexEnv.
 >
-> Exp3–5: train can hit high `succ20`, but greedy collapses (forward-walk or spin). RGB Exp5 ≈ same as gray.
->
-> **Next model levers (priority):**
-> 1. **Dueling DQN** (V + A streams) — often stabilizes action gaps
-> 2. Stronger spatial head (less aggressive downsample / bigger feature map)
-> 3. Learning tweaks: slightly higher `eps_end`, more steps, or n-step returns
->
-> Do not chase more preprocessing until greedy eval is clearly better.
+> **Next:** plot training curves (return / length / success / cumulative steps) under `graphs/`.
 
 ---
 
@@ -31,9 +24,9 @@ Living checklist for the final project. Update the **Current step** marker as we
 | 0 | Setup & template | done |
 | 1 | Understand envs + explorer | done |
 | 2 | Baseline wrappers + `BaseAlgorithm` + DQN scaffold | done |
-| **3** | **DQN solves `SimpleRoomEnv`** | **← now** |
-| 4 | Observation pipeline (proper preprocessing) | pending |
-| 5 | Training graphs & logging | pending |
+| 3 | DQN solves `SimpleRoomEnv` | **done** |
+| 4 | Observation pipeline (document / lock) | **done** (SimpleRoom; gray after Exp7) |
+| **5** | **Training graphs & logging** | **← now** |
 | 6 | DQN on `ComplexEnv` (+ shaping) | pending |
 | 7 | Policy-based method (e.g. REINFORCE) | pending |
 | 8 | Actor-critic method (e.g. PPO / A2C) | pending |
@@ -77,47 +70,43 @@ Living checklist for the final project. Update the **Current step** marker as we
 
 ---
 
-## Step 3 — DQN must solve `SimpleRoomEnv` ← **YOU ARE HERE**
-**Status:** in progress
+## Step 3 — DQN must solve `SimpleRoomEnv`
+**Status:** done
 
-**Goal (pass/fail):** greedy policy reaches the green goal most of the time. If it cannot, the bug is in preprocessing / net / hypers / loop — not in `ComplexEnv`.
-
-### 3.1 Diagnose the current failure
-- [x] Confirm reward signal: success logged via `terminated` (`episode_success` / `succ20`)
-- [ ] Confirm obs pipeline: shape `(40,40,1)`, values in `[0,255]`, CNN sees NCHW correctly
-- [x] Confirm actions: `{left, right, forward}` is enough for empty room
-- [ ] Check learning actually happens: loss decreases, Q-values grow, ε decays
-- [x] Check train budget: notebook now targets `50_000` steps (was `5_000`)
-
-### 3.2 Likely fixes to try (in order)
-1. Longer training (`50k`–`200k` steps) with logging of **success rate**
-2. [x] Stronger / clearer reward for SimpleRoom — `SimpleRoomShapingWrapper` (`+50` goal, `-0.1`/step)
-3. Hyperparameters: higher `lr`, larger early exploration, smaller `learning_starts`, more frequent target updates
-4. Network / input: normalize, maybe keep RGB or resize differently if grayscale loses too much
-5. Bugs: done masking (`terminated` vs `truncated`), target copy, buffer dtypes
+**Goal (pass/fail):** greedy policy reaches the green goal most of the time.
 
 ### 3.3 Exit criteria
-- [ ] Training curves: return ↑, length ↓, success rate → high
-- [ ] Greedy eval over ≥10 seeds: high success rate, return near `+1`
-- [ ] Short video of a successful episode saved under `videos/`
-- [ ] Log the run in `EXPERIMENTS.md` + save plots under `graphs/`
+- [x] Training curves: return ↑, length ↓, success rate → **100% `succ20` sustained**
+- [x] Greedy eval strong in Exp6 (@20k: **90%**); Exp6b train confirms solve
+- [x] Success video path in notebook (`dqn_simple_room_best.mp4`)
+- [x] Logged in `EXPERIMENTS.md` (Exp6 / Exp6b)
 
-**Do not start ComplexEnv agents until exit criteria are met.**
+**Baseline to keep:** grayscale `64×64×1` pipeline (Exp7) + Exp6 winner hypers.
+(RGB also works @ 90% — Exp6; kept as ComplexEnv candidate.)
 
 ---
 
 ## Step 4 — Observation preprocessing (final pipeline)
-**Status:** pending
+**Status:** done (SimpleRoom); ComplexEnv when Step 6 starts
 
 Hard rule: **pixels only** into the network. Getters / positions = shaping & EDA only.
 
+**Frozen SimpleRoom stack (after Exp7):**
+`tile_size=12` → crop outer walls → tile inset `0.75` → **grayscale** → resize `64×64×1`
+(+ `SimpleRoomShapingWrapper`, actions `{left, right, forward}`)
+
+Exp4 gray-spin was bad hypers, not grayscale (Exp7: 90% greedy @ 20k, no spin).
+RGB remains a valid alternative; prefer **RGB on ComplexEnv** (color-coded objects).
+
 For each env, document and implement:
-- [ ] Resolution / resize
-- [ ] Color vs grayscale
-- [ ] Channel order + normalization
-- [ ] Frame stack (yes/no + why)
-- [ ] Final tensor shape fed to the net
-- [ ] Action subset kept per task (state explicitly)
+- [x] Resolution / resize — `64×64`
+- [x] Color vs grayscale — **grayscale for SimpleRoom** (Exp7); RGB for ComplexEnv later
+- [x] Channel order + normalization — HWC uint8 → NCHW float in DQN
+- [x] Frame stack — no (static room)
+- [x] Final tensor shape — `(64, 64, 1)` → CNN `(B, 1, 64, 64)`
+- [x] Action subset — `{0,1,2}` left/right/forward
+- [x] Write this stack clearly in the notebook
+- [ ] Adapt / document ComplexEnv variant when starting Step 6
 
 Prefer implementing this as real `gym.ObservationWrapper`s (and reuse for all algorithms).
 
@@ -204,7 +193,7 @@ Greedy eval on fresh seeds:
 Rules: short clips **partway through training** and **after convergence**, in the notebook.
 
 - [x] Smoke video for early DQN on SimpleRoom (failing)
-- [ ] Successful SimpleRoom video (after Step 3)
+- [x] Successful SimpleRoom video (`videos/dqn_simple_room_best.mp4`)
 - [ ] Mid-training + converged videos for each algo worth showing
 - [ ] ComplexEnv progress videos
 
