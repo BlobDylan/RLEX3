@@ -6,14 +6,12 @@ Living checklist for the final project. Update the **Current step** marker as we
 
 ## Current step
 
-> **Step 5 — Training graphs & logging**
+> **Step 5 — Training metrics & graphs**
 >
-> Status: **ready to start**
+> Status: **in progress** — helpers + notebook cell added; run the Step 5 cell to write PNGs
 >
-> **Exp7 DONE:** grayscale + winner hypers @ 20k → greedy **90%**, no spin (matches RGB Exp6).
-> SimpleRoom default obs → **`64×64×1` grayscale**. Keep RGB for ComplexEnv.
->
-> **Next:** plot training curves (return / length / success / cumulative steps) under `graphs/`.
+> **Next:** execute the Step 5 notebook cell (uses `dqn_gray_history` / `dqn_best_history`
+> or a JSON under `graphs/`), confirm the four plots look right, then Step 6 ComplexEnv.
 
 ---
 
@@ -113,17 +111,19 @@ Prefer implementing this as real `gym.ObservationWrapper`s (and reuse for all al
 ---
 
 ## Step 5 — Training metrics & graphs
-**Status:** pending
+**Status:** in progress (helpers ready; run notebook cell)
 
 Assignment requires (x-axis = training episode; rolling averages OK):
-- [ ] Reward / return per episode
-- [ ] Steps per episode
-- [ ] Success rate per episode
-- [ ] **Cumulative env steps vs episode** (common budget axis)
+- [x] Reward / return per episode — `plot_training_history` → `*_return.png`
+- [x] Steps per episode — `*_length.png`
+- [x] Success rate per episode — `*_success.png`
+- [x] **Cumulative env steps vs episode** — `*_cum_steps.png` (+ overview panel)
 
 Also:
-- [ ] Helpers to save figures into `graphs/`
-- [ ] Log hypers + seeds in `EXPERIMENTS.md`
+- [x] Helpers to save figures into `graphs/` — `algorithms/plotting.py`
+- [x] Persist history JSON for kernel restarts
+- [ ] Confirm plots from Exp7 / Exp6b history in the notebook
+- [ ] Log hypers + seeds already in `EXPERIMENTS.md` (keep updated)
 
 ---
 
