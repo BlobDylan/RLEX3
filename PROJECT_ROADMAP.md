@@ -8,16 +8,19 @@ Living checklist for the final project. Update the **Current step** marker as we
 
 > **Step 3 — Make DQN solve `SimpleRoomEnv` (sanity check)**
 >
-> Status: **in progress — diagnosing (Exercise2 reviewed)**
+> Status: **in progress — freeze obs pipeline; next = model / learning changes**
 >
-> Smoke run so far (`5_000` steps, grayscale `40×40×1`, 3 actions):
-> - training mean20 return ≈ `0.10`–`0.15`
-> - greedy eval: mean return `0.0`, mean length `100` (never reaches goal)
-> - video: random-looking / failing policy
+> Locked preprocessing (for now):
+> `tile=12 → wall-crop → tile-inset(0.75) → RGB → resize 64` + shaping `+50/−0.1` + actions `(0,1,2)`
 >
-> **Lesson from `../../Exercise2/RLEX2` (tabular HW2):** EmptyEnv was solved with MC / SARSA / Q-Learning on a **symbolic** state `(x,y,dir)`, not pixels — plus a **dense reward** (`+50` goal, `-0.1`/step), success logging, ~**2000 episodes**, actions `(0,1,2)`. Distance-based Q-init / relative `dx,dy` in state are **forbidden** here (pixels-only + no geometry rewards).
+> Exp3–5: train can hit high `succ20`, but greedy collapses (forward-walk or spin). RGB Exp5 ≈ same as gray.
 >
-> **Next actions:** add success logging + legal dense shaping (goal scale + step penalty wrapper), then a longer SimpleRoom DQN run. Until greedy success is high, do **not** move on to `ComplexEnv` or other algorithms.
+> **Next model levers (priority):**
+> 1. **Dueling DQN** (V + A streams) — often stabilizes action gaps
+> 2. Stronger spatial head (less aggressive downsample / bigger feature map)
+> 3. Learning tweaks: slightly higher `eps_end`, more steps, or n-step returns
+>
+> Do not chase more preprocessing until greedy eval is clearly better.
 
 ---
 
@@ -80,15 +83,15 @@ Living checklist for the final project. Update the **Current step** marker as we
 **Goal (pass/fail):** greedy policy reaches the green goal most of the time. If it cannot, the bug is in preprocessing / net / hypers / loop — not in `ComplexEnv`.
 
 ### 3.1 Diagnose the current failure
-- [ ] Confirm reward signal: does the env ever return `+1` during training? (log successes)
+- [x] Confirm reward signal: success logged via `terminated` (`episode_success` / `succ20`)
 - [ ] Confirm obs pipeline: shape `(40,40,1)`, values in `[0,255]`, CNN sees NCHW correctly
-- [ ] Confirm actions: `{left, right, forward}` is enough for empty room
+- [x] Confirm actions: `{left, right, forward}` is enough for empty room
 - [ ] Check learning actually happens: loss decreases, Q-values grow, ε decays
-- [ ] Check train budget: `5_000` steps is almost certainly too short — plan a longer run once the loop looks sane
+- [x] Check train budget: notebook now targets `50_000` steps (was `5_000`)
 
 ### 3.2 Likely fixes to try (in order)
 1. Longer training (`50k`–`200k` steps) with logging of **success rate**
-2. Stronger / clearer reward for SimpleRoom (sparse `+1` only is fine if budget is large enough; optional tiny step penalty)
+2. [x] Stronger / clearer reward for SimpleRoom — `SimpleRoomShapingWrapper` (`+50` goal, `-0.1`/step)
 3. Hyperparameters: higher `lr`, larger early exploration, smaller `learning_starts`, more frequent target updates
 4. Network / input: normalize, maybe keep RGB or resize differently if grayscale loses too much
 5. Bugs: done masking (`terminated` vs `truncated`), target copy, buffer dtypes
