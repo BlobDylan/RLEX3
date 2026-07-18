@@ -66,3 +66,45 @@ def agent_rollout_video(agent, env, filename, max_steps=100, fps=8, seed=None):
             if terminated or truncated:
                 break
     return steps, total_reward
+
+
+def multi_rollout_video(
+    agent,
+    env,
+    filename,
+    *,
+    n_episodes=4,
+    max_steps=200,
+    fps=8,
+    seed=None,
+    explore=False,
+    gap_frames=4,
+):
+    """Record several episodes into a single mp4 for behavioural variety.
+
+    Each episode uses a different seed (``seed + i``) so the map/spawn differ, giving
+    a representative sample of the policy rather than one fixed trajectory. Episodes
+    are separated by a short freeze on the final frame. ``explore=True`` uses the
+    agent's current ε (stochastic) instead of greedy. Returns a list of
+    ``(steps, total_reward)`` per episode.
+    """
+    results: list[tuple[int, float]] = []
+    with imageio.get_writer(filename, fps=fps) as video:
+        for i in range(int(n_episodes)):
+            ep_seed = None if seed is None else int(seed) + i
+            obs, _ = env.reset(seed=ep_seed)
+            frame = env.render()
+            video.append_data(frame)
+            total_reward, steps = 0.0, 0
+            for steps in range(1, max_steps + 1):
+                action = agent.select_action(obs, explore=explore)
+                obs, reward, terminated, truncated, _ = env.step(action)
+                total_reward += float(reward)
+                frame = env.render()
+                video.append_data(frame)
+                if terminated or truncated:
+                    break
+            for _ in range(int(gap_frames)):  # brief freeze between episodes
+                video.append_data(frame)
+            results.append((steps, total_reward))
+    return results

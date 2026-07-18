@@ -81,6 +81,119 @@ class ReplayBuffer:
         return obs, actions, rewards, next_obs, terminateds, discounts
 
 
+class PrioritizedReplayBuffer:
+    """Proportional prioritized replay (Schaul et al., 2016) backed by a sum-tree.
+
+    Same storage as ``ReplayBuffer`` but samples transition ``i`` with probability
+    ∝ ``p_i**alpha`` where ``p_i = |TD_i| + eps``. Importance-sampling weights
+    ``w_i = (N·P_i)**(-beta)`` (normalised by their max) correct the sampling bias;
+    ``beta`` anneals 0.4→1 over training. New transitions enter at the **current** max
+    priority (tracked by a parallel max-tree) so each is seen at least once before its
+    TD error is known. Using the *current* max — not a monotonic running max — is what
+    keeps this scale-robust: with aggressive ``reward_scale`` the TD errors are ≪1, so a
+    pinned max would over-sample every fresh transition ~16× and collapse the replay into
+    a recency window. This targets the ComplexEnv failure mode: the rare water→lava→goal
+    transitions get up-sampled instead of being drowned by the ~100% early-stage ones.
+    """
+
+    def __init__(self, capacity: int, obs_shape: tuple[int, ...], *, alpha: float = 0.6, eps: float = 1e-3) -> None:
+        self.capacity = int(capacity)
+        self.obs_shape = tuple(obs_shape)
+        self.ptr = 0
+        self.size = 0
+        self.alpha = float(alpha)
+        self.eps = float(eps)
+        self.default_priority = 1.0  # only used before any real priority exists
+
+        self.obs = np.empty((capacity, *obs_shape), dtype=np.uint8)
+        self.next_obs = np.empty((capacity, *obs_shape), dtype=np.uint8)
+        self.actions = np.empty((capacity,), dtype=np.int64)
+        self.rewards = np.empty((capacity,), dtype=np.float32)
+        self.terminateds = np.empty((capacity,), dtype=np.float32)
+        self.discounts = np.empty((capacity,), dtype=np.float32)
+
+        # Parallel binary trees over a power-of-two capacity (unused leaves stay 0, so
+        # they are never sampled): ``tree`` holds subtree priority SUMS (for sampling),
+        # ``maxtree`` holds subtree priority MAX (for the current-max new-item priority,
+        # which adapts DOWN as TD errors shrink instead of pinning at a stale value).
+        self.tree_capacity = 1
+        while self.tree_capacity < self.capacity:
+            self.tree_capacity <<= 1
+        self.tree = np.zeros(2 * self.tree_capacity, dtype=np.float64)
+        self.maxtree = np.zeros(2 * self.tree_capacity, dtype=np.float64)
+        self.depth = self.tree_capacity.bit_length() - 1
+
+    def __len__(self) -> int:
+        return self.size
+
+    def _current_max(self) -> float:
+        m = float(self.maxtree[1])
+        return m if m > 0.0 else self.default_priority
+
+    def _set(self, data_idx: int, priority: float) -> None:
+        i = int(data_idx) + self.tree_capacity
+        self.tree[i] = priority
+        self.maxtree[i] = priority
+        i >>= 1
+        while i >= 1:
+            self.tree[i] = self.tree[2 * i] + self.tree[2 * i + 1]
+            self.maxtree[i] = max(self.maxtree[2 * i], self.maxtree[2 * i + 1])
+            i >>= 1
+
+    def add(self, obs, action, reward, next_obs, terminated, discount) -> None:
+        p = self.ptr
+        self.obs[p] = obs
+        self.next_obs[p] = next_obs
+        self.actions[p] = action
+        self.rewards[p] = reward
+        self.terminateds[p] = float(terminated)
+        self.discounts[p] = float(discount)
+        self._set(p, self._current_max())  # new = current max priority (adaptive)
+        self.ptr = (self.ptr + 1) % self.capacity
+        self.size = min(self.size + 1, self.capacity)
+
+    def sample(self, batch_size: int, device: torch.device, beta: float = 0.4):
+        total = float(self.tree[1])
+        # Stratified: one draw per equal-mass segment (lower-variance minibatch).
+        segment = total / batch_size
+        s = (np.arange(batch_size) + np.random.random(batch_size)) * segment
+        idx = np.ones(batch_size, dtype=np.int64)
+        for _ in range(self.depth):  # vectorised root->leaf descent for the batch
+            left = 2 * idx
+            left_val = self.tree[left]
+            go_right = s > left_val
+            s = np.where(go_right, s - left_val, s)
+            idx = left + go_right.astype(np.int64)
+        data_idx = np.clip(idx - self.tree_capacity, 0, self.size - 1)
+
+        priorities = self.tree[data_idx + self.tree_capacity]
+        probs = priorities / total
+        weights = (self.size * probs) ** (-float(beta))
+        weights = (weights / weights.max()).astype(np.float32)
+
+        non_blocking = device.type == "cuda"
+
+        def _to(arr: np.ndarray, dtype: torch.dtype) -> torch.Tensor:
+            t = torch.from_numpy(np.ascontiguousarray(arr))
+            if non_blocking:
+                t = t.pin_memory()
+            return t.to(device=device, dtype=dtype, non_blocking=non_blocking)
+
+        obs = _to(self.obs[data_idx], torch.float32)
+        next_obs = _to(self.next_obs[data_idx], torch.float32)
+        actions = _to(self.actions[data_idx], torch.int64)
+        rewards = _to(self.rewards[data_idx], torch.float32)
+        terminateds = _to(self.terminateds[data_idx], torch.float32)
+        discounts = _to(self.discounts[data_idx], torch.float32)
+        weights_t = _to(weights, torch.float32)
+        return obs, actions, rewards, next_obs, terminateds, discounts, weights_t, data_idx
+
+    def update_priorities(self, data_idx: np.ndarray, td_errors: np.ndarray) -> None:
+        pri = (np.abs(np.asarray(td_errors, dtype=np.float64)) + self.eps) ** self.alpha
+        for di, p in zip(np.asarray(data_idx).ravel(), pri.ravel()):
+            self._set(int(di), float(p))
+
+
 # ---------------------------------------------------------------------------
 # n-step return accumulator
 # ---------------------------------------------------------------------------
@@ -184,7 +297,10 @@ class QNetwork(nn.Module):
                 ]
             )
         self.features = nn.Sequential(*feat_layers)
-        self.feat_hw = (5, 5)
+        # Match the 8x8 interior grid (10x10 room minus the outer wall ring): the conv
+        # stack yields a 16x16 map, so this is a clean 2x downsample that preserves
+        # per-cell locality — the exact adjacency the water->lava toggle depends on.
+        self.feat_hw = (8, 8)
         self.head = nn.Sequential(
             nn.Flatten(),
             nn.Linear(c3 * self.feat_hw[0] * self.feat_hw[1], hdim),
@@ -246,6 +362,10 @@ class DQN(BaseAlgorithm):
         width_mult: int = 1,
         n_extra_conv: int = 0,
         fc_mult: int = 1,
+        prioritized: bool = False,
+        per_alpha: float = 0.6,
+        per_beta0: float = 0.4,
+        per_beta_steps: int = 1_000_000,
     ) -> None:
         super().__init__(obs_shape, n_actions, device=device, seed=seed)
 
@@ -289,7 +409,15 @@ class DQN(BaseAlgorithm):
         self.target_net.eval()
 
         self.optimizer = Adam(self.q_net.parameters(), lr=lr)
-        self.buffer = ReplayBuffer(buffer_size, obs_shape)
+        # Prioritized replay: up-sample high-TD (rare, surprising) transitions — the
+        # water→lava→goal ferry — so they are not drowned by the ~100% early stages.
+        self.prioritized = bool(prioritized)
+        self.per_beta0 = float(per_beta0)
+        self.per_beta_steps = max(1, int(per_beta_steps))
+        if self.prioritized:
+            self.buffer = PrioritizedReplayBuffer(buffer_size, obs_shape, alpha=per_alpha)
+        else:
+            self.buffer = ReplayBuffer(buffer_size, obs_shape)
 
         self._updates = 0
 
@@ -393,6 +521,11 @@ class DQN(BaseAlgorithm):
             for tp, p in zip(self.target_net.parameters(), self.q_net.parameters()):
                 tp.data.mul_(1.0 - self.tau).add_(p.data, alpha=self.tau)
 
+    def _per_beta(self) -> float:
+        """Importance-sampling exponent, annealed from ``per_beta0`` to 1.0."""
+        frac = min(1.0, self.total_steps / self.per_beta_steps)
+        return self.per_beta0 + (1.0 - self.per_beta0) * frac
+
     def update(self, *, return_loss: bool | None = None) -> float | None:
         """One Double-DQN gradient step on a replay minibatch (n-step targets).
 
@@ -402,9 +535,15 @@ class DQN(BaseAlgorithm):
         if len(self.buffer) < max(self.batch_size, self.learning_starts):
             return None
 
-        obs, actions, rewards, next_obs, terminateds, discounts = self.buffer.sample(
-            self.batch_size, self.device
-        )
+        if self.prioritized:
+            beta = self._per_beta()
+            (obs, actions, rewards, next_obs, terminateds, discounts,
+             weights, indices) = self.buffer.sample(self.batch_size, self.device, beta)
+        else:
+            obs, actions, rewards, next_obs, terminateds, discounts = self.buffer.sample(
+                self.batch_size, self.device
+            )
+            weights = None
 
         with torch.no_grad():
             if self.double_dqn:
@@ -419,12 +558,20 @@ class DQN(BaseAlgorithm):
             targets = rewards + (1.0 - terminateds) * discounts * next_q
 
         q_values = self.q_net(obs).gather(1, actions.unsqueeze(1)).squeeze(1)
-        loss = F.smooth_l1_loss(q_values, targets)
+        if self.prioritized:
+            per_elem = F.smooth_l1_loss(q_values, targets, reduction="none")
+            loss = (weights * per_elem).mean()
+        else:
+            loss = F.smooth_l1_loss(q_values, targets)
 
         self.optimizer.zero_grad(set_to_none=True)
         loss.backward()
         nn.utils.clip_grad_norm_(self.q_net.parameters(), 10.0)
         self.optimizer.step()
+
+        if self.prioritized:
+            td = (q_values - targets).detach().cpu().numpy()
+            self.buffer.update_priorities(indices, td)
 
         self._updates += 1
         self._sync_target()
@@ -461,6 +608,7 @@ class DQN(BaseAlgorithm):
         log_every: int | None = None,
         log_every_episodes: int | None = None,
         n_envs: int = 1,
+        callback: Callable[[int], None] | None = None,
         **kwargs: Any,
     ) -> dict[str, list[float]]:
         """Interact with ``env_fn()``, store transitions, and update Q.
@@ -491,12 +639,14 @@ class DQN(BaseAlgorithm):
                 env_fn,
                 total_timesteps=total_timesteps,
                 log_every_episodes=log_every_episodes,
+                callback=callback,
             )
         return self._train_vectorized(
             env_fn,
             total_timesteps=total_timesteps,
             log_every_episodes=log_every_episodes,
             n_envs=n_envs,
+            callback=callback,
         )
 
     def _maybe_learn(self, history: dict[str, list[float]]) -> None:
@@ -539,6 +689,7 @@ class DQN(BaseAlgorithm):
         *,
         total_timesteps: int,
         log_every_episodes: int,
+        callback: Callable[[int], None] | None = None,
     ) -> dict[str, list[float]]:
         env = env_fn()
         history = self._empty_history()
@@ -569,6 +720,8 @@ class DQN(BaseAlgorithm):
             ep_len += 1
             self.total_steps += 1
             self._maybe_learn(history)
+            if callback is not None:
+                callback(self.total_steps)
 
             if episode_done:
                 for tr in nstep.flush():
@@ -600,6 +753,7 @@ class DQN(BaseAlgorithm):
         total_timesteps: int,
         log_every_episodes: int,
         n_envs: int,
+        callback: Callable[[int], None] | None = None,
     ) -> dict[str, list[float]]:
         import gymnasium as gym
 
@@ -676,6 +830,8 @@ class DQN(BaseAlgorithm):
                 steps_since_update=steps_since_update,
             )
             obss = next_obss
+            if callback is not None:
+                callback(self.total_steps)
 
         envs.close()
         return history

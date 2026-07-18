@@ -6,47 +6,41 @@ Living checklist for the final project. Update the **Current step** marker as we
 
 ## Current step
 
-> **Step 6c / 6d — ComplexEnv train + unstick**
+> **Step 6c done / 6d in progress — ComplexEnv from-scratch DQN**
 >
-> <<<<<<< HEAD
-> Status: Rainbow `rb_w1`; logs every **10 episodes**; shaping adds
-> **`leave_right_room`** (every backtrack) and **`key_drop_locked_left`**
-> (−every drop in left while door locked; `door_heavy` −8).
+> Pure from-scratch Double-DQN on ComplexEnv (single `(64,64,3)` RGB frame,
+> monotonic pull-forward shaping, n-step, `n_envs=8`, `width_mult=2`, MPS). Runs +
+> graphs + periodic rollout videos captured. Bottleneck isolated to the
+> **water→lava→goal ferry** plus a **greedy-vs-exploratory gap** (permanent ε floor
+> left the greedy policy trap-bound).
 >
-> # **Next:** re-run factory cell + train; watch premature key-drop / door stick.
->
-> Status: overnight partial; **Exp13 running** — 2×2 `tile∈{12,16}` ×
-> `width_mult∈{1,2}` on winner recipe (`frequent_updates`+`door_heavy`, 250k) →
-> `graphs/ab_tile_arch/`.
->
-> **Next:** when Exp13 finishes, pick best cell; then push water/lava + fix greedy
-> collapse. Plots/videos from best run.
->
-> > > > > > > master
+> **Next:** (A) low-ε anneal (→0.05 / 700k) + 900k budget alone to fix the greedy
+> traps; then (A)+**scale-robust prioritized replay** (max-tree) to consolidate the
+> ferry. Full run-by-run log in **Step 6d** below.
 
 ---
 
 ## Progress overview
 
-| Step   | Topic                                                | Status                                 |
-| ------ | ---------------------------------------------------- | -------------------------------------- |
-| 0      | Setup & template                                     | done                                   |
-| 1      | Understand envs + explorer                           | done                                   |
-| 2      | Baseline wrappers + `BaseAlgorithm` + DQN scaffold   | done                                   |
-| 3      | DQN solves `SimpleRoomEnv`                           | **done**                               |
-| 4      | Observation pipeline (document / lock)               | **done** (SimpleRoom; gray after Exp7) |
-| 5      | Training graphs & logging                            | **done**                               |
-| 6a     | ComplexEnv: stack + event shaping                    | **done**                               |
-| 6b     | ComplexEnv: stage metrics + short DQN smoke          | **done**                               |
-| **6c** | **ComplexEnv: first real DQN train + graphs/videos** | **← now**                              |
-| 6d     | ComplexEnv: unstick (tuning if 6c stalls)            | pending                                |
-| 7      | Policy-based method (e.g. REINFORCE)                 | pending                                |
-| 8      | Actor-critic method (e.g. PPO / A2C)                 | pending                                |
-| 9      | Full training results & ComplexEnv stage progress    | pending                                |
-| 10     | Inference comparison table / charts                  | pending                                |
-| 11     | Discussion + best settings cell                      | pending                                |
-| 12     | Videos (mid-training + converged)                    | partial                                |
-| 13     | Report + submission files                            | pending                                |
+| Step   | Topic                                                    | Status                                 |
+| ------ | -------------------------------------------------------- | -------------------------------------- |
+| 0      | Setup & template                                         | done                                   |
+| 1      | Understand envs + explorer                               | done                                   |
+| 2      | Baseline wrappers + `BaseAlgorithm` + DQN scaffold       | done                                   |
+| 3      | DQN solves `SimpleRoomEnv`                               | **done**                               |
+| 4      | Observation pipeline (document / lock)                   | **done** (SimpleRoom; gray after Exp7) |
+| 5      | Training graphs & logging                                | **done**                               |
+| 6a     | ComplexEnv: stack + event shaping                        | **done**                               |
+| 6b     | ComplexEnv: stage metrics + short DQN smoke              | **done**                               |
+| **6c** | **ComplexEnv: first real DQN train + graphs/videos**     | **done**                               |
+| **6d** | **ComplexEnv: unstick (shaping + exploration + replay)** | **← now**                              |
+| 7      | Policy-based method (e.g. REINFORCE)                     | pending                                |
+| 8      | Actor-critic method (e.g. PPO / A2C)                     | pending                                |
+| 9      | Full training results & ComplexEnv stage progress        | pending                                |
+| 10     | Inference comparison table / charts                      | pending                                |
+| 11     | Discussion + best settings cell                          | pending                                |
+| 12     | Videos (mid-training + converged)                        | partial                                |
+| 13     | Report + submission files                                | pending                                |
 
 ---
 
@@ -93,11 +87,7 @@ _Report later — do not block Step 3 on polished write-up._
 
 ### 3.3 Exit criteria
 
-<<<<<<< HEAD
-
-- [x] # Training curves: return ↑, length ↓, success rate → **100%** `succ20` **sustained**
 - [x] Training curves: return ↑, length ↓, success rate → **100% `succ20` sustained**
-  > > > > > > > master
 - [x] Greedy eval strong in Exp6 (@20k: **90%**); Exp6b train confirms solve
 - [x] Success video path in notebook (`dqn_simple_room_best.mp4`)
 - [x] Logged in `EXPERIMENTS.md` (Exp6 / Exp6b)
@@ -181,41 +171,64 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 
 **Exit:** metrics wired; smoke does not crash; early stages move (even if goal = 0%). ✓
 
-### 6c — First real train + graphs / videos ← **YOU ARE HERE**
+### 6c — First real train + graphs / videos
 
-**Status:** in progress / pending
+**Status:** done
 
-- [ ] Longer budget (e.g. 50–100k+ steps; adjust after smoke)
-- [ ] Graphs via Step 5 helpers (return / length / success / cum steps + stage curves)
-- [ ] Mid-training + post-training videos
-- [ ] Identify bottleneck stage for the report
+- [x] Longer budget (from-scratch runs at 500k–900k steps)
+- [x] Graphs via Step 5 helpers (return / length / success / cum steps + stage curves)
+- [x] Mid-training + post-training videos (periodic 6-episode rollouts every 100k)
+- [x] Identify bottleneck stage for the report (**water→lava→goal ferry**)
 
-**Exit:** logged run + plots + videos; clear “how far does DQN get?” answer.
+**Exit:** logged runs + plots + videos; “how far does DQN get?” answered — reliably
+key→door→right→water; ferry (lava/goal) is the open frontier. ✓
 
-### 6d — Unstick (only if 6c stalls)
+### 6d — Unstick (in progress)
 
-**Status:** pending _(optional)_
+**Status:** in progress — pure from-scratch DQN; iterating on shaping / exploration / replay.
 
-**Diagnosis — two failure modes found (2026-07-18):**
+**Corrected diagnosis (supersedes the earlier 2026-07-18 notes):**
 
-1. **Reward-hacking the key-drop bonus.** The `key_drop` shaping (+bonus for the
-   first key drop in the right room, plus the `leave_right_room` /
-   `key_drop_locked_left` terms) likely taught the agent to open the door and
-   immediately drop the key to bank the cheap shaping reward — then stall instead
-   of ferrying water. A classic shaping-induced local optimum: the bonus rewarded a
-   proxy (drop the key) rather than the intended behavior (free the hand _in order
-   to carry water_).
-2. **Inventory is invisible in the observation.** Rendering the env while carrying
-   a water ball vs. not is **pixel-identical** (verified: frame diff = 0 — the
-   carried object is removed from the grid and not drawn on the agent). "Am I
-   holding water?" is unobservable from a single frame, so a memoryless CNN cannot
-   represent the water → lava policy. Fix direction: frame-stacking or a recurrent
-   Q-net so the network can infer inventory from the pickup/consume transition.
+1. **Inventory IS observable from a single RGB frame.** An earlier note claimed the
+   carried object is invisible (frame diff = 0) and that a memoryless CNN therefore
+   cannot represent the water→lava policy. Experiment **disproved** this: a single
+   `(64,64,3)` RGB frame is sufficient, and **frame-stacking HURT** (≈57% → 10% on the
+   door skill). We use one RGB frame; no recurrence needed.
+2. **Camping local optima are the core failure mode**, not observability. Whatever the
+   last reliably-reached milestone is, the greedy policy learns to reach it and then
+   idle to timeout — banked reward + a small step penalty beats the long/risky next
+   stage. Countered stage-by-stage with a **monotonically increasing “pull-forward”
+   reward staircase** (each milestone strictly worth more than the last) so the value
+   gradient always points forward.
+3. **Reward-hacking guards.** key / door / right / key-drop bonuses are first-time
+   latched; key-drop pays **once and only with the door already open** (no pick/drop
+   farm); water paid once per original spawn tile; lava-extinguish deletes the tile.
 
-- [ ] Retune shaping magnitudes / step penalty / `max_steps`
-- [ ] Action or obs tweaks if justified
-- [ ] Hyperparam pass (reuse search tooling) if needed
-- [ ] Document what helped vs what created bad incentives
+**Experiment journey (ComplexEnv, from-scratch Double-DQN):**
+
+| Run      | Change                                                                             | Result                                                                                                                                           |
+| -------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Base     | single RGB frame, event shaping, `reward_scale`, n-step, Double-DQN, MPS           | key/door learned; door→right stalled                                                                                                             |
+| Capacity | `width_mult` 1→2 (0.5M→2M params) + `n_envs=8`                                     | **cracked door→right** — a capacity+exploration wall, not shaping                                                                                |
+| N+1      | pull-forward rewards (water 20, lava 25, goal 120, key_drop 15); `feat_hw` 5×5→8×8 | water 55–80%; first goal touches; camping recurred **post-water** (~+50 plateau)                                                                 |
+| N+2      | ε-floor 0.20 / decay 400k; `max_steps` 300→200; `n_step` 3→5; 600k                 | training `succ20` spiked to 25% in the tail — but **final greedy eval = 0%** (key 72, water 4, lava/goal 0)                                      |
+| diag     | fixed-ε sweep on the N+2 model                                                     | greedy ≪ exploratory: early chain **trap-bound** (tiny ε fixes key 72→92); **ferry ~0% at every ε** (never learned)                              |
+| N+3      | (A) ε→0.05 / 700k anneal + 900k; (B) prioritized replay                            | A+B **regressed** (PER + aggressive `reward_scale` → recency-biased replay). Split: run A alone; PER **fixed** with a scale-robust **max-tree**. |
+
+**Key structural findings (for the report):**
+
+- **Pull-forward shaping** beats camping, but the camp relocates to the next frontier.
+- **Greedy-vs-exploratory gap:** a permanent ε floor leaves the greedy policy
+  trap-bound; the greedy trajectory must be optimised by **annealing ε low** at the end.
+- **The water→lava→goal ferry is a rare-event learning wall** — reachable under
+  exploration but never consolidated into the greedy policy; current lever is
+  scale-robust prioritized replay (up-sample the rare high-TD ferry transitions).
+
+- [x] Retune shaping magnitudes / step penalty / `max_steps` (pull-forward staircase; timeout == death, no suicide)
+- [x] Obs / arch tweaks (single RGB confirmed; `feat_hw` grid-aligned 8×8; 2M–4.6M params)
+- [x] Exploration schedule (sustained ε for discovery; low-ε anneal for greedy consolidation)
+- [x] Prioritized replay (scale-robust max-tree) to up-sample rare ferry transitions
+- [ ] Land a >0% **greedy** eval on the full chain, or write up the justified partial (key→door→right→water)
 
 **Exit:** better stage progress **or** a justified partial-success write-up.
 

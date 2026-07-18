@@ -16,6 +16,7 @@ from .plotting import (
 from .video import (
     agent_rollout_video,
     embed_mp4,
+    multi_rollout_video,
     random_rollout_video,
     video_path,
 )
@@ -27,6 +28,7 @@ __all__ = [
     "get_torch_device",
     "graphs_dir",
     "load_training_history",
+    "multi_rollout_video",
     "pick_history",
     "plot_training_history",
     "random_rollout_video",
