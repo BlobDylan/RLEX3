@@ -95,39 +95,64 @@ class BaseAlgorithm(ABC):
         max_steps: int | None = None,
         seed: int | None = None,
     ) -> dict[str, float]:
-        """Roll out ``n_episodes`` greedily and return mean / std return + success rate."""
+        """Roll out ``n_episodes`` greedily and return mean / std return + success rate.
+
+        If the env puts ``stage_*`` / ``success`` in ``info`` (ComplexEnv), those are
+        used instead of treating every ``terminated`` as a win (lava death).
+        """
+        stage_keys = (
+            "stage_key",
+            "stage_door",
+            "stage_right",
+            "stage_water",
+            "stage_lava",
+            "stage_goal",
+        )
         returns: list[float] = []
         lengths: list[int] = []
         successes: list[float] = []
+        stage_hits: dict[str, list[float]] = {k: [] for k in stage_keys}
+        saw_stages = False
 
         for ep in range(n_episodes):
-            obs, _ = env.reset(seed=None if seed is None else seed + ep)
+            obs, info = env.reset(seed=None if seed is None else seed + ep)
             done = False
             ep_return = 0.0
             ep_len = 0
-            reached_goal = False
 
             while not done:
                 action = self.select_action(obs, explore=False)
-                obs, reward, terminated, truncated, _ = env.step(action)
+                obs, reward, terminated, truncated, info = env.step(action)
                 ep_return += float(reward)
                 ep_len += 1
-                reached_goal = bool(terminated)
                 done = terminated or truncated
                 if max_steps is not None and ep_len >= max_steps:
                     break
 
+            if "success" in info:
+                reached_goal = bool(info["success"])
+            else:
+                reached_goal = bool(terminated)
+
             returns.append(ep_return)
             lengths.append(ep_len)
             successes.append(1.0 if reached_goal else 0.0)
+            for k in stage_keys:
+                if k in info:
+                    saw_stages = True
+                stage_hits[k].append(1.0 if info.get(k) else 0.0)
 
-        return {
+        out: dict[str, float] = {
             "mean_return": float(np.mean(returns)),
             "std_return": float(np.std(returns)),
             "mean_length": float(np.mean(lengths)),
             "success_rate": float(np.mean(successes)),
             "n_episodes": float(n_episodes),
         }
+        if saw_stages:
+            for k, vals in stage_hits.items():
+                out[k] = float(np.mean(vals))
+        return out
 
     def to_tensor(self, obs: np.ndarray) -> torch.Tensor:
         """Convert a single observation to a batched float32 tensor on device.

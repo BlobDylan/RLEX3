@@ -6,14 +6,14 @@ Living checklist for the final project. Update the **Current step** marker as we
 
 ## Current step
 
-> **Step 6b — Stage metrics + short DQN smoke**
+> **Step 6c / 6d — ComplexEnv train + unstick**
 >
-> Status: **ready to start**
+> Status: overnight partial; **Exp13 running** — 2×2 `tile∈{12,16}` ×
+> `width_mult∈{1,2}` on winner recipe (`frequent_updates`+`door_heavy`, 250k) →
+> `graphs/ab_tile_arch/`.
 >
-> **6a DONE.** Grayscale stack, actions `(0..5)`, first-time anti-farm shaping locked
-> (`goal_scale=50`, `step_penalty=0.1`, keep `enter_right_room`). Sanity wiring OK.
->
-> **Next:** wire stage reach-rates into DQN logs/history, run a short smoke (≈5–10k steps).
+> **Next:** when Exp13 finishes, pick best cell; then push water/lava + fix greedy
+> collapse. Plots/videos from best run.
 
 ---
 
@@ -28,8 +28,8 @@ Living checklist for the final project. Update the **Current step** marker as we
 | 4 | Observation pipeline (document / lock) | **done** (SimpleRoom; gray after Exp7) |
 | 5 | Training graphs & logging | **done** |
 | 6a | ComplexEnv: stack + event shaping | **done** |
-| **6b** | **ComplexEnv: stage metrics + short DQN smoke** | **← now** |
-| 6c | ComplexEnv: first real DQN train + graphs/videos | pending |
+| 6b | ComplexEnv: stage metrics + short DQN smoke | **done** |
+| **6c** | **ComplexEnv: first real DQN train + graphs/videos** | **← now** |
 | 6d | ComplexEnv: unstick (tuning if 6c stalls) | pending |
 | 7 | Policy-based method (e.g. REINFORCE) | pending |
 | 8 | Actor-critic method (e.g. PPO / A2C) | pending |
@@ -142,20 +142,22 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 
 - [x] Action subset `(0..5)`; grayscale `64×64×1`; first-time anti-farm shaping
 - [x] Locked magnitudes: `goal_scale=50`, `step_penalty=0.1`, keep `enter_right_room=+5`
+- [x] `max_steps=200` via factory (env default is 400; assignment allows override)
 - [x] Sanity random rollouts: events fire (key often; door/right rare)
 - [x] Documented in `EXPERIMENTS.md`
 
-### 6b — Stage metrics + short DQN smoke ← **YOU ARE HERE**
-**Status:** ready
+### 6b — Stage metrics + short DQN smoke
+**Status:** done
 
-- [ ] Log stage reach-rates in training history / printouts (`stage_key` … `stage_goal`)
-- [ ] Short DQN smoke (e.g. 5–10k steps) with SimpleRoom winner hypers as starting point
-- [ ] Confirm *some* early-stage progress (key/door) shows up in logs
+- [x] Log stage reach-rates in training history / printouts (`stage_key` … `stage_goal`)
+- [x] Prefer `info["success"]` over raw `terminated` (lava death ≠ win)
+- [x] Throughput: `train_freq` / sparse loss sync (Exp10); **Exp10b** Mac defaults (`n_envs=1`, `freq=8`)
+- [x] Short DQN smoke (~10k) — stage logs OK; Exp10b re-run **~35s** on MPS
 
-**Exit:** metrics wired; smoke does not crash; early stages move (even if goal = 0%).
+**Exit:** metrics wired; smoke does not crash; early stages move (even if goal = 0%). ✓
 
-### 6c — First real train + graphs / videos
-**Status:** pending *(after 6b)*
+### 6c — First real train + graphs / videos ← **YOU ARE HERE**
+**Status:** in progress / pending
 
 - [ ] Longer budget (e.g. 50–100k+ steps; adjust after smoke)
 - [ ] Graphs via Step 5 helpers (return / length / success / cum steps + stage curves)

@@ -1,0 +1,83 @@
+{
+  "name": "A_shape_key_then_door",
+  "tags": [
+    "phaseA",
+    "shaping"
+  ],
+  "dqn_preset": "slow_eps",
+  "shaping_preset": "key_then_door",
+  "shaping": {
+    "key_pickup": 15.0,
+    "door_open": 30.0,
+    "enter_right_room": 10.0
+  },
+  "use_enter_right_room": true,
+  "hparams": {
+    "lr": 0.000281,
+    "gamma": 0.95,
+    "batch_size": 64,
+    "train_freq": 8,
+    "gradient_steps": 1,
+    "tau": 1.0,
+    "target_update_freq": 500,
+    "eps_start": 1.0,
+    "eps_end": 0.1,
+    "eps_decay_steps": 80000,
+    "learning_starts": 1000,
+    "double_dqn": true,
+    "buffer_size": 100000,
+    "log_loss_every": 100
+  },
+  "grayscale": true,
+  "max_steps": 200,
+  "total_timesteps": 80000,
+  "seed": 1003,
+  "obs_shape": [
+    64,
+    64,
+    1
+  ],
+  "n_actions": 6,
+  "device": "mps",
+  "started_at": "2026-07-17T20:42:12.262730+00:00",
+  "finished_at": "2026-07-17T20:47:05.774094+00:00",
+  "wall_seconds": 289.5080021670001,
+  "steps_per_sec": 276.33087652566064,
+  "eval": {
+    "mean_return": -20.000000000000007,
+    "std_return": 7.105427357601002e-15,
+    "mean_length": 200.0,
+    "success_rate": 0.0,
+    "n_episodes": 15.0,
+    "stage_key": 0.0,
+    "stage_door": 0.0,
+    "stage_right": 0.0,
+    "stage_water": 0.0,
+    "stage_lava": 0.0,
+    "stage_goal": 0.0
+  },
+  "late_stages": {
+    "stage_key": 0.32,
+    "stage_door": 0.0,
+    "stage_right": 0.0,
+    "stage_water": 0.0,
+    "stage_lava": 0.0,
+    "stage_goal": 0.0,
+    "episode_success": 0.0
+  },
+  "diagnose": {
+    "action_counts": {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 100
+    },
+    "success": false,
+    "return": -9.99999999999998,
+    "steps": 100
+  },
+  "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_key_then_door/agent.pt",
+  "score": -0.20000000000000007
+}

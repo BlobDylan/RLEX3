@@ -1,0 +1,488 @@
+Matplotlib is building the font cache; this may take a moment.
+objc[43702]: Class SDLApplication is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36ca68) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4890). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDLAppDelegate is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cab8) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a48e0). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDLTranslatorResponder is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cb30) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4958). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDLMessageBoxPresenter is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cb58) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4980). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDL_cocoametalview is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cba8) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a49d0). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDLOpenGLContext is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cbf8) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4a20). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDL_ShapeData is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cc70) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4a98). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDL_CocoaClosure is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36ccc0) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4ae8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDL_VideoData is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cd10) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4b38). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDL_WindowData is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cd60) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4b88). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDLWindow is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cd88) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4bb0). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class Cocoa_WindowListener is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cdb0) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4bd8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDLView is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36ce28) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4c50). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class METAL_RenderData is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cea0) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4cc8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class METAL_TextureData is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36cef0) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4d18). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDL_RumbleMotor is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36c9c8) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4d40). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[43702]: Class SDL_RumbleContext is implemented in both /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/pygame/.dylibs/libSDL2-2.0.0.dylib (0x10c36ca18) and /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/.venv/lib/python3.13/site-packages/cv2/.dylibs/libSDL2-2.0.0.dylib (0x11d5a4d90). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+device: mps (Apple Metal — float32 only; fallback enabled)
+scheduled 47 trials → /Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex
+
+[1/47] 
+============================================================
+▶ A_shape_default6a  steps=80000  dqn=slow_eps  shape=default6a  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -15.00  mean20= -15.25  succ20= 0.0%  eps=0.820  key= 65% door= 10% right= 10% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -15.00  mean20= -16.00  succ20= 0.0%  eps=0.640  key= 60% door= 10% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -15.00  mean20= -16.00  succ20= 0.0%  eps=0.460  key= 70% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -20.00  mean20= -17.00  succ20= 0.0%  eps=0.280  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -15.00  mean20= -16.75  succ20= 0.0%  eps=0.100  key= 45% door= 10% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_default6a  5.0min  door_late=4%  key_late=42%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[2/47] 
+============================================================
+▶ A_shape_door_heavy  steps=80000  dqn=slow_eps  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -20.00  mean20= -18.65  succ20= 0.0%  eps=0.820  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -20.00  mean20= -18.95  succ20= 0.0%  eps=0.640  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -20.00  mean20= -17.55  succ20= 0.0%  eps=0.460  key= 40% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -20.00  mean20= -18.95  succ20= 0.0%  eps=0.280  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -20.00  mean20= -19.10  succ20= 0.0%  eps=0.100  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_door_heavy  4.9min  door_late=2%  key_late=40%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[3/47] 
+============================================================
+▶ A_shape_door_extreme  steps=80000  dqn=slow_eps  shape=door_extreme  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -10.00  mean20=  -9.10  succ20= 0.0%  eps=0.820  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return=  -8.00  mean20=  -5.95  succ20= 0.0%  eps=0.640  key= 65% door=  5% right=  5% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return=  -8.00  mean20=  -6.50  succ20= 0.0%  eps=0.460  key= 75% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return=  -8.00  mean20=  -8.90  succ20= 0.0%  eps=0.280  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -10.00  mean20=  -8.70  succ20= 0.0%  eps=0.100  key= 65% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_door_extreme  4.8min  door_late=2%  key_late=58%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[4/47] 
+============================================================
+▶ A_shape_key_then_door  steps=80000  dqn=slow_eps  shape=key_then_door  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return=  -5.00  mean20= -15.50  succ20= 0.0%  eps=0.820  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return=  -5.00  mean20= -10.25  succ20= 0.0%  eps=0.640  key= 55% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -20.00  mean20= -12.50  succ20= 0.0%  eps=0.460  key= 40% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -20.00  mean20= -14.75  succ20= 0.0%  eps=0.280  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -20.00  mean20= -15.50  succ20= 0.0%  eps=0.100  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_key_then_door  4.8min  door_late=0%  key_late=32%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[5/47] 
+============================================================
+▶ A_shape_low_step_cost  steps=80000  dqn=slow_eps  shape=low_step_cost  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return=   1.00  mean20=   1.50  succ20= 0.0%  eps=0.820  key= 50% door= 15% right=  0% water=  0% lava=  0% goal=  0%
+steps=  31994  episodes=  160  return=   1.00  mean20=  -0.00  succ20= 0.0%  eps=0.640  key= 60% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  47994  episodes=  240  return=  -4.00  mean20=  -0.25  succ20= 0.0%  eps=0.460  key= 55% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  63994  episodes=  320  return=  -4.00  mean20=  -1.00  succ20= 0.0%  eps=0.280  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  79994  episodes=  400  return=   1.00  mean20=  -1.00  succ20= 0.0%  eps=0.100  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_low_step_cost  4.8min  door_late=2%  key_late=52%  eval_succ=0%  eval_door=0%  score=0.1
+
+[6/47] 
+============================================================
+▶ A_shape_high_step_cost  steps=80000  dqn=slow_eps  shape=high_step_cost  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -35.00  mean20= -36.00  succ20= 0.0%  eps=0.820  key= 60% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -35.00  mean20= -35.00  succ20= 0.0%  eps=0.640  key= 60% door= 10% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -35.00  mean20= -35.25  succ20= 0.0%  eps=0.460  key= 70% door=  5% right=  5% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -35.00  mean20= -36.75  succ20= 0.0%  eps=0.280  key= 65% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -40.00  mean20= -37.25  succ20= 0.0%  eps=0.100  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_high_step_cost  4.8min  door_late=0%  key_late=58%  eval_succ=0%  eval_door=0%  score=-0.3
+
+[7/47] 
+============================================================
+▶ A_shape_goal_dominant  steps=80000  dqn=slow_eps  shape=goal_dominant  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -20.00  mean20= -14.75  succ20= 0.0%  eps=0.820  key= 65% door= 10% right= 10% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -20.00  mean20= -16.00  succ20= 0.0%  eps=0.640  key= 50% door= 10% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -20.00  mean20= -17.25  succ20= 0.0%  eps=0.460  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -15.00  mean20= -18.25  succ20= 0.0%  eps=0.280  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -20.00  mean20= -18.00  succ20= 0.0%  eps=0.100  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_goal_dominant  4.8min  door_late=0%  key_late=38%  eval_succ=0%  eval_door=0%  score=0.1
+
+[8/47] 
+============================================================
+▶ A_shape_sparse_mid  steps=80000  dqn=slow_eps  shape=sparse_mid  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -12.00  mean20= -16.40  succ20= 0.0%  eps=0.820  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -20.00  mean20= -15.20  succ20= 0.0%  eps=0.640  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -20.00  mean20= -12.70  succ20= 0.0%  eps=0.460  key= 60% door= 10% right=  5% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -20.00  mean20= -16.40  succ20= 0.0%  eps=0.280  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -12.00  mean20= -16.80  succ20= 0.0%  eps=0.100  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_sparse_mid  4.8min  door_late=0%  key_late=42%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[9/47] 
+============================================================
+▶ A_shape_no_enter_bonus  steps=80000  dqn=slow_eps  shape=no_enter_bonus  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -15.00  mean20= -13.75  succ20= 0.0%  eps=0.820  key= 75% door= 10% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return=  10.00  mean20= -16.00  succ20= 0.0%  eps=0.640  key= 55% door=  5% right=  5% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -15.00  mean20= -17.50  succ20= 0.0%  eps=0.460  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -15.00  mean20= -16.00  succ20= 0.0%  eps=0.280  key= 55% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -15.00  mean20= -15.75  succ20= 0.0%  eps=0.100  key= 60% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_no_enter_bonus  4.8min  door_late=4%  key_late=54%  eval_succ=0%  eval_door=0%  score=0.1
+
+[10/47] 
+============================================================
+▶ A_shape_lava_aware  steps=80000  dqn=slow_eps  shape=lava_aware  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -15.00  mean20= -17.00  succ20= 0.0%  eps=0.820  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -20.00  mean20= -16.75  succ20= 0.0%  eps=0.640  key= 45% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -15.00  mean20= -16.75  succ20= 0.0%  eps=0.460  key= 45% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -20.00  mean20= -18.00  succ20= 0.0%  eps=0.280  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -15.00  mean20= -17.00  succ20= 0.0%  eps=0.100  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ A_shape_lava_aware  4.8min  door_late=0%  key_late=48%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[11/47] 
+============================================================
+▶ B_dqn_exp10b_fast  steps=80000  dqn=exp10b_fast  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -20.00  mean20= -18.80  succ20= 0.0%  eps=0.320  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -20.00  mean20= -18.65  succ20= 0.0%  eps=0.150  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -20.00  mean20= -19.25  succ20= 0.0%  eps=0.150  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -17.00  mean20= -18.65  succ20= 0.0%  eps=0.150  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -20.00  mean20= -19.40  succ20= 0.0%  eps=0.150  key= 20% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_exp10b_fast  5.1min  door_late=0%  key_late=30%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[12/47] 
+============================================================
+▶ B_dqn_slow_eps  steps=80000  dqn=slow_eps  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -18.20  succ20= 0.0%  eps=0.820  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -18.35  succ20= 0.0%  eps=0.640  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -17.00  mean20= -15.20  succ20= 0.0%  eps=0.460  key= 60% door= 10% right=  5% water=  5% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -17.00  mean20= -17.25  succ20= 0.0%  eps=0.280  key= 50% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -17.00  mean20= -18.95  succ20= 0.0%  eps=0.100  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_slow_eps  4.8min  door_late=0%  key_late=40%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[13/47] 
+============================================================
+▶ B_dqn_very_slow_eps  steps=80000  dqn=very_slow_eps  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -17.90  succ20= 0.0%  eps=0.873  key= 70% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -18.65  succ20= 0.0%  eps=0.747  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -17.00  mean20= -16.65  succ20= 0.0%  eps=0.620  key= 70% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -20.00  mean20= -16.95  succ20= 0.0%  eps=0.493  key= 60% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -17.00  mean20= -18.80  succ20= 0.0%  eps=0.367  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_very_slow_eps  4.6min  door_late=0%  key_late=56%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[14/47] 
+============================================================
+▶ B_dqn_soft_target  steps=80000  dqn=soft_target  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -17.40  succ20= 0.0%  eps=0.320  key= 45% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -20.00  mean20= -19.10  succ20= 0.0%  eps=0.150  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -17.00  mean20= -18.50  succ20= 0.0%  eps=0.150  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -20.00  mean20= -18.80  succ20= 0.0%  eps=0.150  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -17.00  mean20= -18.50  succ20= 0.0%  eps=0.150  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_soft_target  5.2min  door_late=0%  key_late=44%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[15/47] 
+============================================================
+▶ B_dqn_soft_fast  steps=80000  dqn=soft_fast  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -18.65  succ20= 0.0%  eps=0.320  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  31909  episodes=  160  return= -20.00  mean20= -19.25  succ20= 0.0%  eps=0.150  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  47909  episodes=  240  return= -20.00  mean20= -19.25  succ20= 0.0%  eps=0.150  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  63909  episodes=  320  return= -20.00  mean20= -19.10  succ20= 0.0%  eps=0.150  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  79909  episodes=  400  return= -20.00  mean20= -18.65  succ20= 0.0%  eps=0.150  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_soft_fast  5.2min  door_late=0%  key_late=32%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[16/47] 
+============================================================
+▶ B_dqn_vanilla_dqn  steps=80000  dqn=vanilla_dqn  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -20.00  mean20= -18.35  succ20= 0.0%  eps=0.320  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -20.00  mean20= -18.95  succ20= 0.0%  eps=0.150  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -17.00  mean20= -18.65  succ20= 0.0%  eps=0.150  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -20.00  mean20= -18.65  succ20= 0.0%  eps=0.150  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -20.00  mean20= -18.95  succ20= 0.0%  eps=0.150  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_vanilla_dqn  4.9min  door_late=0%  key_late=44%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[17/47] 
+============================================================
+▶ B_dqn_high_gamma  steps=80000  dqn=high_gamma  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -16.95  succ20= 0.0%  eps=0.773  key= 60% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -18.95  succ20= 0.0%  eps=0.547  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -20.00  mean20= -19.25  succ20= 0.0%  eps=0.320  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -17.00  mean20= -18.65  succ20= 0.0%  eps=0.150  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -17.00  mean20= -18.65  succ20= 0.0%  eps=0.150  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_high_gamma  5.0min  door_late=0%  key_late=52%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[18/47] 
+============================================================
+▶ B_dqn_low_gamma  steps=80000  dqn=low_gamma  shape=door_heavy  gray=True  horizon=200
+
+steps=  15953  episodes=   80  return= -20.00  mean20= -18.50  succ20= 0.0%  eps=0.322  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  31953  episodes=  160  return= -20.00  mean20= -19.10  succ20= 0.0%  eps=0.150  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  47953  episodes=  240  return= -17.00  mean20= -19.55  succ20= 0.0%  eps=0.150  key= 15% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  63953  episodes=  320  return= -17.00  mean20= -18.50  succ20= 0.0%  eps=0.150  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  79953  episodes=  400  return= -20.00  mean20= -18.95  succ20= 0.0%  eps=0.150  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_low_gamma  5.2min  door_late=0%  key_late=40%  eval_succ=0%  eval_door=0%  score=0.1
+
+[19/47] 
+============================================================
+▶ B_dqn_big_batch  steps=80000  dqn=big_batch  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -20.00  mean20= -19.10  succ20= 0.0%  eps=0.320  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -17.90  succ20= 0.0%  eps=0.150  key= 70% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -20.00  mean20= -16.65  succ20= 0.0%  eps=0.150  key= 70% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -17.00  mean20= -17.75  succ20= 0.0%  eps=0.150  key= 75% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return=   8.00  mean20= -13.95  succ20= 0.0%  eps=0.150  key= 60% door= 15% right=  5% water=  5% lava=  0% goal=  0%
+✓ B_dqn_big_batch  15.6min  door_late=12%  key_late=76%  eval_succ=0%  eval_door=7%  score=2.2
+
+[20/47] 
+============================================================
+▶ B_dqn_small_batch  steps=80000  dqn=small_batch  shape=door_heavy  gray=True  horizon=200
+
+steps=  15924  episodes=   80  return= -20.00  mean20= -18.65  succ20= 0.0%  eps=0.323  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  31924  episodes=  160  return= -20.00  mean20= -19.55  succ20= 0.0%  eps=0.150  key= 15% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  47924  episodes=  240  return= -20.00  mean20= -18.20  succ20= 0.0%  eps=0.150  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  63924  episodes=  320  return= -20.00  mean20= -19.10  succ20= 0.0%  eps=0.150  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  79924  episodes=  400  return= -20.00  mean20= -18.65  succ20= 0.0%  eps=0.150  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_small_batch  5.6min  door_late=2%  key_late=50%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[21/47] 
+============================================================
+▶ B_dqn_frequent_updates  steps=80000  dqn=frequent_updates  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -16.65  succ20= 0.0%  eps=0.773  key= 70% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -17.15  succ20= 0.0%  eps=0.547  key= 95% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -17.00  mean20= -14.20  succ20= 0.0%  eps=0.320  key= 90% door= 10% right=  5% water=  5% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -17.00  mean20= -12.35  succ20= 0.0%  eps=0.150  key= 75% door= 20% right=  5% water=  0% lava=  0% goal=  0%
+steps=  79731  episodes=  400  return=  16.00  mean20=  -5.05  succ20= 0.0%  eps=0.150  key= 70% door= 40% right= 30% water=  5% lava=  5% goal=  0%
+✓ B_dqn_frequent_updates  16.0min  door_late=44%  key_late=76%  eval_succ=0%  eval_door=7%  score=0.6
+
+[22/47] 
+============================================================
+▶ B_dqn_lr_high  steps=80000  dqn=lr_high  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -18.20  succ20= 0.0%  eps=0.773  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -18.35  succ20= 0.0%  eps=0.547  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -20.00  mean20= -18.20  succ20= 0.0%  eps=0.320  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -17.00  mean20= -17.85  succ20= 0.0%  eps=0.150  key= 30% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -17.00  mean20= -17.85  succ20= 0.0%  eps=0.150  key= 30% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_lr_high  4.8min  door_late=4%  key_late=30%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[23/47] 
+============================================================
+▶ B_dqn_lr_low  steps=80000  dqn=lr_low  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -17.40  succ20= 0.0%  eps=0.773  key= 45% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -17.10  succ20= 0.0%  eps=0.547  key= 55% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -17.00  mean20= -18.35  succ20= 0.0%  eps=0.320  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -17.00  mean20= -19.40  succ20= 0.0%  eps=0.150  key= 20% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -20.00  mean20= -19.25  succ20= 0.0%  eps=0.150  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_lr_low  4.8min  door_late=2%  key_late=28%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[24/47] 
+============================================================
+▶ B_dqn_long_buffer  steps=80000  dqn=long_buffer  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -16.95  succ20= 0.0%  eps=0.830  key= 60% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -17.90  succ20= 0.0%  eps=0.660  key= 70% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -17.00  mean20= -15.70  succ20= 0.0%  eps=0.490  key= 60% door= 10% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -17.00  mean20= -18.80  succ20= 0.0%  eps=0.320  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -20.00  mean20= -18.00  succ20= 0.0%  eps=0.150  key= 25% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+✓ B_dqn_long_buffer  4.7min  door_late=2%  key_late=16%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[25/47] 
+============================================================
+▶ C_gray_door  steps=80000  dqn=slow_eps  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -18.05  succ20= 0.0%  eps=0.820  key= 65% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -20.00  mean20= -18.50  succ20= 0.0%  eps=0.640  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -17.00  mean20= -17.40  succ20= 0.0%  eps=0.460  key= 45% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  63929  episodes=  320  return= -20.00  mean20= -17.55  succ20= 0.0%  eps=0.281  key= 40% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  79929  episodes=  400  return= -20.00  mean20= -18.50  succ20= 0.0%  eps=0.101  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ C_gray_door  4.7min  door_late=0%  key_late=34%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[26/47] 
+============================================================
+▶ C_rgb_door  steps=80000  dqn=slow_eps  shape=door_heavy  gray=False  horizon=200
+
+steps=  16000  episodes=   80  return= -17.00  mean20= -16.25  succ20= 0.0%  eps=0.820  key= 70% door=  5% right=  5% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -16.80  succ20= 0.0%  eps=0.640  key= 65% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  47958  episodes=  240  return= -17.00  mean20= -15.70  succ20= 0.0%  eps=0.460  key= 85% door=  5% right=  5% water=  5% lava=  0% goal=  0%
+steps=  63958  episodes=  320  return= -17.00  mean20= -17.30  succ20= 0.0%  eps=0.280  key= 90% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  79958  episodes=  400  return= -17.00  mean20= -17.45  succ20= 0.0%  eps=0.100  key= 85% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ C_rgb_door  4.9min  door_late=6%  key_late=78%  eval_succ=0%  eval_door=0%  score=0.2
+
+[27/47] 
+============================================================
+▶ D_horizon_150  steps=80000  dqn=slow_eps  shape=door_heavy  gray=True  horizon=150
+
+steps=  12000  episodes=   80  return= -12.00  mean20= -11.95  succ20= 0.0%  eps=0.865  key= 60% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  24000  episodes=  160  return= -12.00  mean20= -13.95  succ20= 0.0%  eps=0.730  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  36000  episodes=  240  return= -15.00  mean20= -13.95  succ20= 0.0%  eps=0.595  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  47885  episodes=  320  return= -12.00  mean20= -12.40  succ20= 0.0%  eps=0.461  key= 45% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  59885  episodes=  400  return= -15.00  mean20= -14.25  succ20= 0.0%  eps=0.326  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  71885  episodes=  480  return= -15.00  mean20= -11.30  succ20= 0.0%  eps=0.191  key= 40% door= 10% right=  0% water=  0% lava=  0% goal=  0%
+✓ D_horizon_150  4.8min  door_late=0%  key_late=24%  eval_succ=0%  eval_door=0%  score=0.3
+
+[28/47] 
+============================================================
+▶ D_horizon_200  steps=80000  dqn=slow_eps  shape=door_heavy  gray=True  horizon=200
+
+steps=  16000  episodes=   80  return= -20.00  mean20= -15.15  succ20= 0.0%  eps=0.820  key= 65% door= 10% right=  5% water=  0% lava=  0% goal=  0%
+steps=  32000  episodes=  160  return= -17.00  mean20= -15.90  succ20= 0.0%  eps=0.640  key= 50% door= 10% right=  0% water=  5% lava=  0% goal=  0%
+steps=  48000  episodes=  240  return= -20.00  mean20= -18.35  succ20= 0.0%  eps=0.460  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  64000  episodes=  320  return= -20.00  mean20= -17.70  succ20= 0.0%  eps=0.280  key= 35% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  80000  episodes=  400  return= -17.00  mean20= -18.65  succ20= 0.0%  eps=0.100  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ D_horizon_200  4.8min  door_late=0%  key_late=32%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[29/47] 
+============================================================
+▶ D_horizon_300  steps=80000  dqn=slow_eps  shape=door_heavy  gray=True  horizon=300
+
+steps=  24000  episodes=   80  return= -27.00  mean20= -26.50  succ20= 0.0%  eps=0.730  key= 75% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  47954  episodes=  160  return= -27.00  mean20= -26.65  succ20= 0.0%  eps=0.461  key= 70% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps=  71954  episodes=  240  return= -27.00  mean20= -28.50  succ20= 0.0%  eps=0.191  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ D_horizon_300  4.8min  door_late=4%  key_late=42%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[30/47] 
+============================================================
+▶ E_deep_door_sloweps  steps=250000  dqn=slow_eps  shape=door_heavy  gray=True  horizon=200
+
+steps=  50000  episodes=  250  return= -20.00  mean20= -18.80  succ20= 0.0%  eps=0.438  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 100000  episodes=  500  return= -20.00  mean20= -18.95  succ20= 0.0%  eps=0.100  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 150000  episodes=  750  return= -20.00  mean20= -17.25  succ20= 0.0%  eps=0.100  key= 50% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps= 200000  episodes= 1000  return= -17.00  mean20= -18.05  succ20= 0.0%  eps=0.100  key= 65% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 250000  episodes= 1250  return= -20.00  mean20= -18.20  succ20= 0.0%  eps=0.100  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ E_deep_door_sloweps  16.2min  door_late=0%  key_late=68%  eval_succ=0%  eval_door=0%  score=1.2
+
+[31/47] 
+============================================================
+▶ E_deep_door_extreme  steps=250000  dqn=very_slow_eps  shape=door_extreme  gray=True  horizon=200
+
+steps=  50000  episodes=  250  return= -10.00  mean20=  -9.30  succ20= 0.0%  eps=0.604  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 100000  episodes=  500  return=  -8.00  mean20=  -9.00  succ20= 0.0%  eps=0.208  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 150000  episodes=  750  return= -10.00  mean20=  -9.80  succ20= 0.0%  eps=0.050  key= 10% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 200000  episodes= 1000  return= -10.00  mean20=  -9.20  succ20= 0.0%  eps=0.050  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 250000  episodes= 1250  return= -10.00  mean20=  -9.80  succ20= 0.0%  eps=0.050  key= 10% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ E_deep_door_extreme  16.0min  door_late=0%  key_late=20%  eval_succ=0%  eval_door=0%  score=0.0
+
+[32/47] 
+============================================================
+▶ E_deep_keydoor  steps=250000  dqn=slow_eps  shape=key_then_door  gray=True  horizon=200
+
+steps=  50000  episodes=  250  return= -20.00  mean20=  -6.50  succ20= 0.0%  eps=0.438  key= 80% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps= 100000  episodes=  500  return=  -5.00  mean20= -13.25  succ20= 0.0%  eps=0.100  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 150000  episodes=  750  return=  -5.00  mean20=  -8.00  succ20= 0.0%  eps=0.100  key= 80% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 200000  episodes= 1000  return=  -5.00  mean20=  -3.00  succ20= 0.0%  eps=0.100  key= 90% door= 10% right=  5% water=  0% lava=  0% goal=  0%
+steps= 250000  episodes= 1250  return=  -5.00  mean20= -12.50  succ20= 0.0%  eps=0.100  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ E_deep_keydoor  16.2min  door_late=0%  key_late=64%  eval_succ=0%  eval_door=0%  score=0.8
+
+[33/47] 
+============================================================
+▶ E_deep_soft_door  steps=250000  dqn=soft_target  shape=door_heavy  gray=True  horizon=200
+
+steps=  50000  episodes=  250  return= -20.00  mean20= -19.25  succ20= 0.0%  eps=0.150  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 100000  episodes=  500  return= -20.00  mean20= -19.40  succ20= 0.0%  eps=0.150  key= 20% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 150000  episodes=  750  return= -20.00  mean20= -18.95  succ20= 0.0%  eps=0.150  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 200000  episodes= 1000  return= -20.00  mean20= -18.20  succ20= 0.0%  eps=0.150  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 250000  episodes= 1250  return= -17.00  mean20= -17.60  succ20= 0.0%  eps=0.150  key= 80% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ E_deep_soft_door  16.5min  door_late=0%  key_late=68%  eval_succ=0%  eval_door=0%  score=1.0
+
+[34/47] 
+============================================================
+▶ E_deep_rgb_door  steps=250000  dqn=slow_eps  shape=door_heavy  gray=False  horizon=200
+
+steps=  50000  episodes=  250  return= -20.00  mean20= -17.60  succ20= 0.0%  eps=0.438  key= 80% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 100000  episodes=  500  return= -17.00  mean20= -18.65  succ20= 0.0%  eps=0.100  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 150000  episodes=  750  return= -17.00  mean20= -17.30  succ20= 0.0%  eps=0.100  key= 90% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 200000  episodes= 1000  return= -17.00  mean20= -17.30  succ20= 0.0%  eps=0.100  key= 90% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 250000  episodes= 1250  return= -17.00  mean20= -15.80  succ20= 0.0%  eps=0.100  key= 85% door=  5% right=  5% water=  0% lava=  0% goal=  0%
+✓ E_deep_rgb_door  16.9min  door_late=6%  key_late=84%  eval_succ=0%  eval_door=0%  score=0.9
+
+[35/47] 
+============================================================
+▶ E_deep_frequent  steps=250000  dqn=frequent_updates  shape=door_heavy  gray=True  horizon=200
+
+steps=  50000  episodes=  250  return= -20.00  mean20= -17.75  succ20= 0.0%  eps=0.292  key= 75% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  99946  episodes=  500  return= -17.00  mean20=  -7.70  succ20= 0.0%  eps=0.150  key= 80% door= 30% right= 30% water=  0% lava=  0% goal=  0%
+steps= 149609  episodes=  750  return= -17.00  mean20=  -9.35  succ20= 0.0%  eps=0.150  key= 65% door= 30% right= 15% water=  0% lava=  0% goal=  0%
+steps= 199186  episodes= 1000  return= -17.00  mean20=  -8.67  succ20= 0.0%  eps=0.150  key= 75% door= 30% right= 15% water=  0% lava=  0% goal=  0%
+steps= 248702  episodes= 1250  return=  16.00  mean20=  -0.25  succ20= 0.0%  eps=0.150  key= 80% door= 55% right= 45% water=  0% lava=  0% goal=  0%
+✓ E_deep_frequent  52.0min  door_late=46%  key_late=66%  eval_succ=0%  eval_door=47%  score=9.7
+
+[36/47] 
+============================================================
+▶ E_deep_high_gamma  steps=250000  dqn=high_gamma  shape=door_extreme  gray=True  horizon=200
+
+steps=  49989  episodes=  250  return=  -8.00  mean20=  -8.90  succ20= 0.0%  eps=0.292  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  99989  episodes=  500  return= -10.00  mean20=  -9.20  succ20= 0.0%  eps=0.150  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 149989  episodes=  750  return= -10.00  mean20=  -9.20  succ20= 0.0%  eps=0.150  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 199989  episodes= 1000  return= -10.00  mean20=  -9.50  succ20= 0.0%  eps=0.150  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 249989  episodes= 1250  return= -10.00  mean20=  -9.20  succ20= 0.0%  eps=0.150  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ E_deep_high_gamma  16.2min  door_late=0%  key_late=48%  eval_succ=0%  eval_door=0%  score=0.0
+
+[37/47] 
+============================================================
+▶ E_deep_default_long  steps=250000  dqn=exp10b_fast  shape=default6a  gray=True  horizon=200
+
+steps=  49977  episodes=  250  return= -20.00  mean20= -19.00  succ20= 0.0%  eps=0.150  key= 20% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  99977  episodes=  500  return= -20.00  mean20= -18.00  succ20= 0.0%  eps=0.150  key= 30% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps= 149977  episodes=  750  return= -20.00  mean20= -18.50  succ20= 0.0%  eps=0.150  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 199977  episodes= 1000  return= -20.00  mean20= -17.75  succ20= 0.0%  eps=0.150  key= 45% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 249977  episodes= 1250  return= -15.00  mean20= -18.00  succ20= 0.0%  eps=0.150  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ E_deep_default_long  16.4min  door_late=0%  key_late=40%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[38/47] 
+============================================================
+▶ E_deep_rgb_extreme  steps=250000  dqn=very_slow_eps  shape=door_extreme  gray=False  horizon=200
+
+steps=  49978  episodes=  250  return=  -8.00  mean20=  -8.00  succ20= 0.0%  eps=0.604  key=100% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  99911  episodes=  500  return=  47.00  mean20=   2.15  succ20= 0.0%  eps=0.209  key= 70% door= 25% right=  5% water=  0% lava=  0% goal=  0%
+steps= 149911  episodes=  750  return= -10.00  mean20=  -3.50  succ20= 0.0%  eps=0.050  key= 25% door= 15% right=  0% water=  0% lava=  0% goal=  0%
+steps= 199911  episodes= 1000  return= -10.00  mean20=  -5.50  succ20= 0.0%  eps=0.050  key= 25% door= 10% right=  0% water=  0% lava=  0% goal=  0%
+steps= 249792  episodes= 1250  return= -10.00  mean20=   7.90  succ20= 0.0%  eps=0.050  key= 45% door= 35% right= 20% water=  0% lava=  0% goal=  0%
+✓ E_deep_rgb_extreme  16.7min  door_late=32%  key_late=44%  eval_succ=0%  eval_door=27%  score=8.7
+
+[39/47] 
+============================================================
+▶ E_deep_lowstep_slow  steps=250000  dqn=slow_eps  shape=low_step_cost  gray=True  horizon=200
+
+steps=  50000  episodes=  250  return=   1.00  mean20=   1.50  succ20= 0.0%  eps=0.438  key= 65% door= 10% right=  5% water=  0% lava=  0% goal=  0%
+steps= 100000  episodes=  500  return=  -4.00  mean20=  -1.00  succ20= 0.0%  eps=0.100  key= 60% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 150000  episodes=  750  return=   1.00  mean20=   0.75  succ20= 0.0%  eps=0.100  key= 95% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 200000  episodes= 1000  return=   1.00  mean20=   0.75  succ20= 0.0%  eps=0.100  key= 95% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 250000  episodes= 1250  return=   1.00  mean20=  -0.75  succ20= 0.0%  eps=0.100  key= 65% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ E_deep_lowstep_slow  16.1min  door_late=2%  key_late=64%  eval_succ=0%  eval_door=0%  score=0.9
+
+[40/47] 
+============================================================
+▶ E_deep_vanilla_door  steps=250000  dqn=vanilla_dqn  shape=door_heavy  gray=True  horizon=200
+
+steps=  50000  episodes=  250  return= -20.00  mean20= -19.10  succ20= 0.0%  eps=0.150  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps=  99781  episodes=  500  return= -17.00  mean20= -17.40  succ20= 0.0%  eps=0.150  key= 45% door=  5% right=  0% water=  0% lava=  0% goal=  0%
+steps= 149781  episodes=  750  return= -17.00  mean20= -19.10  succ20= 0.0%  eps=0.150  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 199781  episodes= 1000  return= -20.00  mean20= -19.25  succ20= 0.0%  eps=0.150  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 249781  episodes= 1250  return= -17.00  mean20= -18.50  succ20= 0.0%  eps=0.150  key= 50% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ E_deep_vanilla_door  15.4min  door_late=0%  key_late=48%  eval_succ=0%  eval_door=0%  score=-0.1
+
+[41/47] 
+============================================================
+▶ E_deep_lrhigh_door  steps=250000  dqn=lr_high  shape=door_heavy  gray=True  horizon=200
+
+steps=  50000  episodes=  250  return= -17.00  mean20= -18.35  succ20= 0.0%  eps=0.292  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 100000  episodes=  500  return= -20.00  mean20= -18.80  succ20= 0.0%  eps=0.150  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 150000  episodes=  750  return= -17.00  mean20= -19.10  succ20= 0.0%  eps=0.150  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 200000  episodes= 1000  return= -20.00  mean20= -19.25  succ20= 0.0%  eps=0.150  key= 25% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 250000  episodes= 1250  return= -20.00  mean20= -19.85  succ20= 0.0%  eps=0.150  key=  5% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ E_deep_lrhigh_door  16.2min  door_late=0%  key_late=16%  eval_succ=0%  eval_door=0%  score=-0.2
+
+[42/47] 
+============================================================
+▶ F_sparse_mid_slow  steps=250000  dqn=very_slow_eps  shape=sparse_mid  gray=True  horizon=300
+
+steps=  75000  episodes=  250  return= -22.00  mean20= -22.40  succ20= 0.0%  eps=0.406  key= 95% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 150000  episodes=  500  return= -30.00  mean20= -25.60  succ20= 0.0%  eps=0.050  key= 55% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 225000  episodes=  750  return= -22.00  mean20= -27.20  succ20= 0.0%  eps=0.050  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+✓ F_sparse_mid_slow  16.2min  door_late=0%  key_late=78%  eval_succ=0%  eval_door=0%  score=0.4
+
+[43/47] 
+============================================================
+▶ F_lava_aware  steps=250000  dqn=slow_eps  shape=lava_aware  gray=True  horizon=200
+
+steps=  50000  episodes=  250  return= -15.00  mean20= -18.50  succ20= 0.0%  eps=0.438  key= 30% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 100000  episodes=  500  return= -15.00  mean20= -18.00  succ20= 0.0%  eps=0.100  key= 40% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 150000  episodes=  750  return= -20.00  mean20= -18.25  succ20= 0.0%  eps=0.100  key= 35% door=  0% right=  0% water=  0% lava=  0% goal=  0%
+steps= 200000  episodes= 1000  return= -15.00  mean20= -15.50  succ20= 0.0%  eps=0.100  key= 90% door=  0% right=  0% water=  0% lava=  0% goal=  0%
