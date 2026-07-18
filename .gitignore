@@ -4,3 +4,8 @@
 __pycache__/
 *.pyc
 .vscode/
+
+# Training artifacts (keep plots/json/logs; weights are large/local)
+*.pt
+*.pth
+graphs/**/.mpl/

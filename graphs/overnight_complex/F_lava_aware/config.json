@@ -1,0 +1,44 @@
+{
+  "name": "F_lava_aware",
+  "tags": [
+    "phaseF",
+    "deep"
+  ],
+  "dqn_preset": "slow_eps",
+  "shaping_preset": "lava_aware",
+  "shaping": {
+    "lava_death": 25.0,
+    "lava_extinguish": 10.0,
+    "door_open": 20.0,
+    "water_pickup": 5.0
+  },
+  "use_enter_right_room": true,
+  "hparams": {
+    "lr": 0.000281,
+    "gamma": 0.95,
+    "batch_size": 64,
+    "train_freq": 8,
+    "gradient_steps": 1,
+    "tau": 1.0,
+    "target_update_freq": 500,
+    "eps_start": 1.0,
+    "eps_end": 0.1,
+    "eps_decay_steps": 80000,
+    "learning_starts": 1000,
+    "double_dqn": true,
+    "buffer_size": 100000,
+    "log_loss_every": 100
+  },
+  "grayscale": true,
+  "max_steps": 200,
+  "total_timesteps": 250000,
+  "seed": 6001,
+  "obs_shape": [
+    64,
+    64,
+    1
+  ],
+  "n_actions": 6,
+  "device": "mps",
+  "started_at": "2026-07-18T03:20:48.223208+00:00"
+}

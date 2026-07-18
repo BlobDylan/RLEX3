@@ -58,21 +58,20 @@ class ReplayBuffer:
     def sample(self, batch_size: int, device: torch.device) -> tuple[torch.Tensor, ...]:
         idx = np.random.randint(0, self.size, size=batch_size)
         # Contiguous float32/int64 on device — MPS-friendly (no float64).
-        obs = torch.from_numpy(np.ascontiguousarray(self.obs[idx])).to(
-            device=device, dtype=torch.float32
-        )
-        next_obs = torch.from_numpy(np.ascontiguousarray(self.next_obs[idx])).to(
-            device=device, dtype=torch.float32
-        )
-        actions = torch.from_numpy(np.ascontiguousarray(self.actions[idx])).to(
-            device=device, dtype=torch.int64
-        )
-        rewards = torch.from_numpy(np.ascontiguousarray(self.rewards[idx])).to(
-            device=device, dtype=torch.float32
-        )
-        terminateds = torch.from_numpy(
-            np.ascontiguousarray(self.terminateds[idx])
-        ).to(device=device, dtype=torch.float32)
+        # CUDA: pin_memory + non_blocking overlaps H2D with compute when possible.
+        non_blocking = device.type == "cuda"
+
+        def _to(arr: np.ndarray, dtype: torch.dtype) -> torch.Tensor:
+            t = torch.from_numpy(np.ascontiguousarray(arr))
+            if non_blocking:
+                t = t.pin_memory()
+            return t.to(device=device, dtype=dtype, non_blocking=non_blocking)
+
+        obs = _to(self.obs[idx], torch.float32)
+        next_obs = _to(self.next_obs[idx], torch.float32)
+        actions = _to(self.actions[idx], torch.int64)
+        rewards = _to(self.rewards[idx], torch.float32)
+        terminateds = _to(self.terminateds[idx], torch.float32)
         return obs, actions, rewards, next_obs, terminateds
 
 
@@ -81,32 +80,46 @@ class ReplayBuffer:
 # ---------------------------------------------------------------------------
 
 class QNetwork(nn.Module):
-    """Small CNN for MiniGrid frames (HWC or CHW). Gentler than Nature-Atari strides."""
+    """CNN for MiniGrid frames (HWC or CHW). Gentler than Nature-Atari strides.
 
-    def __init__(self, obs_shape: tuple[int, ...], n_actions: int) -> None:
+    ``width_mult`` scales conv/head width (1 = original ~0.47M params; 2 ≈ 4× params).
+    """
+
+    def __init__(
+        self,
+        obs_shape: tuple[int, ...],
+        n_actions: int,
+        *,
+        width_mult: int = 1,
+    ) -> None:
         super().__init__()
         self.obs_shape = tuple(obs_shape)
+        self.width_mult = max(1, int(width_mult))
         self.channels_last = self._is_channels_last(obs_shape)
         c = obs_shape[-1] if self.channels_last else obs_shape[0]
+
+        w = self.width_mult
+        c1, c2, c3 = 32 * w, 64 * w, 64 * w
+        hdim = 256 * w
 
         # Strided convs; then bilinear resize to a fixed map (MPS-safe).
         # AdaptiveAvgPool2d(H_out) on MPS requires H % H_out == 0 — fails on
         # cropped 32×32 → … → 8×8 pooled to 5×5. Interpolate avoids that and
         # keeps a spatial feature map (unlike global pool).
         self.features = nn.Sequential(
-            nn.Conv2d(c, 32, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(c, c1, kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(c1, c2, kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(c2, c3, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
         )
         self.feat_hw = (5, 5)
         self.head = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(64 * self.feat_hw[0] * self.feat_hw[1], 256),
+            nn.Linear(c3 * self.feat_hw[0] * self.feat_hw[1], hdim),
             nn.ReLU(),
-            nn.Linear(256, n_actions),
+            nn.Linear(hdim, n_actions),
         )
 
     @staticmethod
@@ -144,12 +157,15 @@ class DQN(BaseAlgorithm):
         buffer_size: int = 100_000,
         learning_starts: int = 1_000,
         train_freq: int = 1,
+        gradient_steps: int = 1,
         target_update_freq: int = 1_000,
         tau: float = 0.005,
         double_dqn: bool = True,
         eps_start: float = 1.0,
         eps_end: float = 0.05,
         eps_decay_steps: int = 50_000,
+        log_loss_every: int = 50,
+        width_mult: int = 1,
     ) -> None:
         super().__init__(obs_shape, n_actions, device=device, seed=seed)
 
@@ -157,15 +173,23 @@ class DQN(BaseAlgorithm):
         self.batch_size = batch_size
         self.learning_starts = learning_starts
         self.train_freq = train_freq
+        self.gradient_steps = max(1, int(gradient_steps))
         self.target_update_freq = target_update_freq
         self.tau = float(tau)
         self.double_dqn = bool(double_dqn)
         self.eps_start = eps_start
         self.eps_end = eps_end
         self.eps_decay_steps = eps_decay_steps
+        # loss.item() forces a device sync — only do it every N updates.
+        self.log_loss_every = max(0, int(log_loss_every))
+        self.width_mult = max(1, int(width_mult))
 
-        self.q_net = QNetwork(obs_shape, n_actions).to(self.device)
-        self.target_net = QNetwork(obs_shape, n_actions).to(self.device)
+        self.q_net = QNetwork(
+            obs_shape, n_actions, width_mult=self.width_mult
+        ).to(self.device)
+        self.target_net = QNetwork(
+            obs_shape, n_actions, width_mult=self.width_mult
+        ).to(self.device)
         self.target_net.load_state_dict(self.q_net.state_dict())
         self.target_net.eval()
 
@@ -192,6 +216,32 @@ class DQN(BaseAlgorithm):
         with torch.no_grad():
             q = self.q_net(self.to_tensor(obs))
             return int(q.argmax(dim=1).item())
+
+    def select_actions(self, obss: np.ndarray, *, explore: bool = True) -> np.ndarray:
+        """Batched ε-greedy — one GPU forward for ``n_envs`` observations.
+
+        Args:
+            obss: Array shaped ``(n_envs, *obs_shape)``.
+        """
+        n = int(obss.shape[0])
+        if explore:
+            eps = self.epsilon()
+            rand_mask = np.random.rand(n) < eps
+        else:
+            rand_mask = np.zeros(n, dtype=bool)
+
+        actions = np.empty(n, dtype=np.int64)
+        if rand_mask.any():
+            actions[rand_mask] = np.random.randint(0, self.n_actions, size=int(rand_mask.sum()))
+
+        need_q = ~rand_mask
+        if need_q.any():
+            with torch.no_grad():
+                batch = np.ascontiguousarray(obss[need_q])
+                x = torch.from_numpy(batch).to(device=self.device, dtype=torch.float32)
+                greedy = self.q_net(x).argmax(dim=1).cpu().numpy()
+            actions[need_q] = greedy
+        return actions
 
     def diagnose_greedy(
         self,
@@ -245,8 +295,12 @@ class DQN(BaseAlgorithm):
             for tp, p in zip(self.target_net.parameters(), self.q_net.parameters()):
                 tp.data.mul_(1.0 - self.tau).add_(p.data, alpha=self.tau)
 
-    def update(self) -> float | None:
-        """One gradient step on a minibatch. Returns loss, or None if skipped."""
+    def update(self, *, return_loss: bool | None = None) -> float | None:
+        """One gradient step on a minibatch. Returns loss, or None if skipped.
+
+        ``return_loss`` defaults to logging every ``log_loss_every`` updates so we
+        avoid a host↔device sync (``loss.item()``) on every step — critical on MPS.
+        """
         if len(self.buffer) < max(self.batch_size, self.learning_starts):
             return None
 
@@ -275,7 +329,24 @@ class DQN(BaseAlgorithm):
         self._updates += 1
         self._sync_target()
 
-        return float(loss.item())
+        if return_loss is None:
+            if self.log_loss_every <= 0:
+                return_loss = False
+            else:
+                return_loss = (self._updates % self.log_loss_every) == 0
+        if return_loss:
+            return float(loss.item())
+        return None
+
+    # ComplexEnv stage latches (from ComplexShapingWrapper info); ignored if absent.
+    _STAGE_KEYS: tuple[str, ...] = (
+        "stage_key",
+        "stage_door",
+        "stage_right",
+        "stage_water",
+        "stage_lava",
+        "stage_goal",
+    )
 
     def train(
         self,
@@ -283,10 +354,199 @@ class DQN(BaseAlgorithm):
         *,
         total_timesteps: int,
         log_every: int = 1_000,
+        n_envs: int = 1,
         **kwargs: Any,
     ) -> dict[str, list[float]]:
-        """Interact with ``env_fn()``, store transitions, and update Q."""
+        """Interact with ``env_fn()``, store transitions, and update Q.
+
+        Args:
+            n_envs: If >1, run ``SyncVectorEnv`` with batched action selection
+                (much better GPU amortization). Episode metrics are still logged
+                per finished sub-env episode.
+        """
+        n_envs = max(1, int(n_envs))
+        if n_envs == 1:
+            return self._train_single(
+                env_fn, total_timesteps=total_timesteps, log_every=log_every
+            )
+        return self._train_vectorized(
+            env_fn,
+            total_timesteps=total_timesteps,
+            log_every=log_every,
+            n_envs=n_envs,
+        )
+
+    def _maybe_learn(self, history: dict[str, list[float]]) -> None:
+        """Run ``gradient_steps`` updates when ``train_freq`` says so."""
+        if self.total_steps < self.learning_starts:
+            return
+        if self.total_steps % self.train_freq != 0:
+            return
+        for _ in range(self.gradient_steps):
+            loss = self.update()
+            if loss is not None:
+                history["loss"].append(loss)
+
+    def _learn_after_rollout(
+        self,
+        history: dict[str, list[float]],
+        *,
+        steps_collected: int,
+        steps_since_update: int,
+    ) -> int:
+        """Vec-env: one learn burst after enough env steps (not n_envs/train_freq bursts).
+
+        SyncVectorEnv steps are already serial on CPU; firing multiple SGD updates
+        per vector step (old while-loop) made ``n_envs>1`` *slower* on MPS.
+        """
+        steps_since_update += steps_collected
+        if self.total_steps < self.learning_starts:
+            return steps_since_update
+        if steps_since_update >= self.train_freq:
+            for _ in range(self.gradient_steps):
+                loss = self.update()
+                if loss is not None:
+                    history["loss"].append(loss)
+            steps_since_update = 0
+        return steps_since_update
+
+    def _train_single(
+        self,
+        env_fn: Callable[[], Any],
+        *,
+        total_timesteps: int,
+        log_every: int,
+    ) -> dict[str, list[float]]:
         env = env_fn()
+        history = self._empty_history()
+        obs, info = env.reset(seed=self.seed)
+        ep_return = 0.0
+        ep_len = 0
+        recent_returns: deque[float] = deque(maxlen=20)
+        recent_success: deque[float] = deque(maxlen=20)
+        recent_stages: dict[str, deque[float]] = {
+            sk: deque(maxlen=20) for sk in self._STAGE_KEYS
+        }
+        saw_stages = False
+
+        while self.total_steps < total_timesteps:
+            action = self.select_action(obs, explore=True)
+            next_obs, reward, terminated, truncated, info = env.step(action)
+            episode_done = bool(terminated or truncated)
+            success = self._success_from_info(info, terminated)
+
+            self.buffer.add(obs, action, float(reward), next_obs, bool(terminated))
+            obs = next_obs
+            ep_return += float(reward)
+            ep_len += 1
+            self.total_steps += 1
+            self._maybe_learn(history)
+
+            if episode_done:
+                self.total_episodes += 1
+                saw_stages = self._log_episode(
+                    history,
+                    recent_returns,
+                    recent_success,
+                    recent_stages,
+                    ep_return,
+                    ep_len,
+                    success,
+                    info,
+                    saw_stages,
+                    log_every,
+                )
+                obs, info = env.reset()
+                ep_return = 0.0
+                ep_len = 0
+
+        env.close()
+        return history
+
+    def _train_vectorized(
+        self,
+        env_fn: Callable[[], Any],
+        *,
+        total_timesteps: int,
+        log_every: int,
+        n_envs: int,
+    ) -> dict[str, list[float]]:
+        import gymnasium as gym
+
+        envs = gym.vector.SyncVectorEnv([env_fn for _ in range(n_envs)])
+        history = self._empty_history()
+        seed = self.seed
+        reset_seeds = None if seed is None else [seed + i for i in range(n_envs)]
+        obss, infos = envs.reset(seed=reset_seeds)
+        ep_returns = np.zeros(n_envs, dtype=np.float64)
+        ep_lens = np.zeros(n_envs, dtype=np.int64)
+        recent_returns: deque[float] = deque(maxlen=20)
+        recent_success: deque[float] = deque(maxlen=20)
+        recent_stages: dict[str, deque[float]] = {
+            sk: deque(maxlen=20) for sk in self._STAGE_KEYS
+        }
+        saw_stages = False
+        steps_since_update = 0
+
+        while self.total_steps < total_timesteps:
+            actions = self.select_actions(obss, explore=True)
+            next_obss, rewards, terminateds, truncateds, infos = envs.step(actions)
+            dones = np.logical_or(terminateds, truncateds)
+
+            for i in range(n_envs):
+                if self.total_steps >= total_timesteps:
+                    break
+                next_obs_i = next_obss[i]
+                term_i = bool(terminateds[i])
+                if dones[i]:
+                    final = None
+                    if isinstance(infos, dict) and "final_observation" in infos:
+                        fo = infos["final_observation"]
+                        if fo is not None and fo[i] is not None:
+                            final = fo[i]
+                    if final is not None:
+                        next_obs_i = final
+                self.buffer.add(
+                    obss[i],
+                    int(actions[i]),
+                    float(rewards[i]),
+                    next_obs_i,
+                    term_i,
+                )
+                ep_returns[i] += float(rewards[i])
+                ep_lens[i] += 1
+                self.total_steps += 1
+
+                if dones[i]:
+                    info_i = self._info_at(infos, i)
+                    success = self._success_from_info(info_i, term_i)
+                    self.total_episodes += 1
+                    saw_stages = self._log_episode(
+                        history,
+                        recent_returns,
+                        recent_success,
+                        recent_stages,
+                        float(ep_returns[i]),
+                        int(ep_lens[i]),
+                        success,
+                        info_i,
+                        saw_stages,
+                        log_every,
+                    )
+                    ep_returns[i] = 0.0
+                    ep_lens[i] = 0
+
+            steps_since_update = self._learn_after_rollout(
+                history,
+                steps_collected=n_envs,
+                steps_since_update=steps_since_update,
+            )
+            obss = next_obss
+
+        envs.close()
+        return history
+
+    def _empty_history(self) -> dict[str, list[float]]:
         history: dict[str, list[float]] = {
             "episode_return": [],
             "episode_length": [],
@@ -295,59 +555,93 @@ class DQN(BaseAlgorithm):
             "epsilon": [],
             "steps": [],
         }
-
-        obs, _ = env.reset(seed=self.seed)
-        ep_return = 0.0
-        ep_len = 0
-        recent_returns: deque[float] = deque(maxlen=20)
-        recent_success: deque[float] = deque(maxlen=20)
-
-        while self.total_steps < total_timesteps:
-            action = self.select_action(obs, explore=True)
-            next_obs, reward, terminated, truncated, _ = env.step(action)
-            episode_done = bool(terminated or truncated)
-            success = 1.0 if terminated else 0.0
-
-            # Bootstrap only on true terminals (goal), not on max_steps truncations.
-            self.buffer.add(obs, action, float(reward), next_obs, bool(terminated))
-            obs = next_obs
-            ep_return += float(reward)
-            ep_len += 1
-            self.total_steps += 1
-
-            if self.total_steps >= self.learning_starts and self.total_steps % self.train_freq == 0:
-                loss = self.update()
-                if loss is not None:
-                    history["loss"].append(loss)
-
-            if episode_done:
-                self.total_episodes += 1
-                recent_returns.append(ep_return)
-                recent_success.append(success)
-                history["episode_return"].append(ep_return)
-                history["episode_length"].append(float(ep_len))
-                history["episode_success"].append(success)
-                history["epsilon"].append(self.epsilon())
-                history["steps"].append(float(self.total_steps))
-
-                if log_every and self.total_episodes % max(1, log_every // 50) == 0:
-                    mean_r = float(np.mean(recent_returns)) if recent_returns else 0.0
-                    succ20 = float(np.mean(recent_success)) if recent_success else 0.0
-                    print(
-                        f"steps={self.total_steps:>7d}  "
-                        f"episodes={self.total_episodes:>5d}  "
-                        f"return={ep_return:7.2f}  "
-                        f"mean20={mean_r:7.2f}  "
-                        f"succ20={succ20:5.1%}  "
-                        f"eps={self.epsilon():.3f}"
-                    )
-
-                obs, _ = env.reset()
-                ep_return = 0.0
-                ep_len = 0
-
-        env.close()
+        for sk in self._STAGE_KEYS:
+            history[sk] = []
         return history
+
+    @staticmethod
+    def _success_from_info(info: dict, terminated: bool) -> float:
+        if "success" in info:
+            return 1.0 if info["success"] else 0.0
+        return 1.0 if terminated else 0.0
+
+    @staticmethod
+    def _info_at(infos: Any, i: int) -> dict:
+        """Pull the i-th env's info from a VectorEnv info payload."""
+        if isinstance(infos, (list, tuple)):
+            return dict(infos[i] or {})
+        if not isinstance(infos, dict):
+            return {}
+        # gymnasium>=0.26 may use "final_info" for done envs
+        if "final_info" in infos:
+            fi = infos["final_info"]
+            if fi is not None and i < len(fi) and fi[i] is not None:
+                return dict(fi[i])
+        out: dict = {}
+        for k, v in infos.items():
+            if k in ("final_observation", "final_info", "_final_observation", "_final_info"):
+                continue
+            try:
+                out[k] = v[i]
+            except Exception:
+                continue
+        return out
+
+    def _log_episode(
+        self,
+        history: dict[str, list[float]],
+        recent_returns: deque[float],
+        recent_success: deque[float],
+        recent_stages: dict[str, deque[float]],
+        ep_return: float,
+        ep_len: int,
+        success: float,
+        info: dict,
+        saw_stages: bool,
+        log_every: int,
+    ) -> bool:
+        recent_returns.append(ep_return)
+        recent_success.append(success)
+        history["episode_return"].append(ep_return)
+        history["episode_length"].append(float(ep_len))
+        history["episode_success"].append(success)
+        history["epsilon"].append(self.epsilon())
+        history["steps"].append(float(self.total_steps))
+
+        for sk in self._STAGE_KEYS:
+            val = 1.0 if info.get(sk) else 0.0
+            if sk in info:
+                saw_stages = True
+            history[sk].append(val)
+            recent_stages[sk].append(val)
+
+        if log_every and self.total_episodes % max(1, log_every // 50) == 0:
+            mean_r = float(np.mean(recent_returns)) if recent_returns else 0.0
+            succ20 = float(np.mean(recent_success)) if recent_success else 0.0
+            line = (
+                f"steps={self.total_steps:>7d}  "
+                f"episodes={self.total_episodes:>5d}  "
+                f"return={ep_return:7.2f}  "
+                f"mean20={mean_r:7.2f}  "
+                f"succ20={succ20:5.1%}  "
+                f"eps={self.epsilon():.3f}"
+            )
+            if saw_stages:
+                parts = []
+                short = {
+                    "stage_key": "key",
+                    "stage_door": "door",
+                    "stage_right": "right",
+                    "stage_water": "water",
+                    "stage_lava": "lava",
+                    "stage_goal": "goal",
+                }
+                for sk, label in short.items():
+                    rate = float(np.mean(recent_stages[sk])) if recent_stages[sk] else 0.0
+                    parts.append(f"{label}={rate:4.0%}")
+                line += "  " + " ".join(parts)
+            print(line)
+        return saw_stages
 
     # ------------------------------------------------------------------
     # Checkpoints
@@ -367,6 +661,7 @@ class DQN(BaseAlgorithm):
                 "obs_shape": self.obs_shape,
                 "n_actions": self.n_actions,
                 "double_dqn": self.double_dqn,
+                "width_mult": self.width_mult,
             },
             path,
         )
@@ -379,3 +674,5 @@ class DQN(BaseAlgorithm):
         self.total_steps = int(ckpt.get("total_steps", 0))
         self.total_episodes = int(ckpt.get("total_episodes", 0))
         self._updates = int(ckpt.get("updates", 0))
+        if "width_mult" in ckpt:
+            self.width_mult = int(ckpt["width_mult"])

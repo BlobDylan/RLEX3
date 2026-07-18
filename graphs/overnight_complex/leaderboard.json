@@ -1,0 +1,3484 @@
+[
+  {
+    "name": "E_deep_frequent",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "frequent_updates",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 2,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 60000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5005,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T00:35:05.552020+00:00",
+    "finished_at": "2026-07-18T01:27:09.370817+00:00",
+    "wall_seconds": 3119.927801749989,
+    "steps_per_sec": 80.13005937501927,
+    "eval": {
+      "mean_return": -5.133333333333426,
+      "std_return": 15.743217234380204,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.5333333333333333,
+      "stage_door": 0.4666666666666667,
+      "stage_right": 0.2,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.66,
+      "stage_door": 0.46,
+      "stage_right": 0.42,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 2,
+        "2": 2,
+        "3": 0,
+        "4": 96,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_frequent/agent.pt",
+    "score": 9.682
+  },
+  {
+    "name": "E_deep_rgb_extreme",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "very_slow_eps",
+    "shaping_preset": "door_extreme",
+    "shaping": {
+      "door_open": 40.0,
+      "key_pickup": 2.0,
+      "enter_right_room": 15.0,
+      "step_penalty": 0.05
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.05,
+      "eps_decay_steps": 120000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": false,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5008,
+    "obs_shape": [
+      64,
+      64,
+      3
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T01:59:52.501533+00:00",
+    "finished_at": "2026-07-18T02:16:35.955408+00:00",
+    "wall_seconds": 999.4028803749825,
+    "steps_per_sec": 250.14936909747385,
+    "eval": {
+      "mean_return": 5.333333333333473,
+      "std_return": 25.130769099961263,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.3333333333333333,
+      "stage_door": 0.26666666666666666,
+      "stage_right": 0.26666666666666666,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.44,
+      "stage_door": 0.32,
+      "stage_right": 0.22,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 100,
+        "5": 0
+      },
+      "success": false,
+      "return": -4.99999999999999,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_rgb_extreme/agent.pt",
+    "score": 8.72
+  },
+  {
+    "name": "B_dqn_big_batch",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "big_batch",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 128,
+      "train_freq": 4,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2008,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:56:45.672898+00:00",
+    "finished_at": "2026-07-17T22:12:27.812872+00:00",
+    "wall_seconds": 938.1405704160134,
+    "steps_per_sec": 85.2750670025116,
+    "eval": {
+      "mean_return": -17.20000000000002,
+      "std_return": 8.93084542470638,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.2,
+      "stage_door": 0.06666666666666667,
+      "stage_right": 0.06666666666666667,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.76,
+      "stage_door": 0.12,
+      "stage_right": 0.02,
+      "stage_water": 0.02,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 48,
+        "1": 51,
+        "2": 1,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_big_batch/agent.pt",
+    "score": 2.2279999999999998
+  },
+  {
+    "name": "E_deep_door_sloweps",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5000,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T23:13:05.015735+00:00",
+    "finished_at": "2026-07-17T23:29:19.457256+00:00",
+    "wall_seconds": 970.4896328750037,
+    "steps_per_sec": 257.60192745119133,
+    "eval": {
+      "mean_return": -17.999999999999986,
+      "std_return": 1.4142135623731134,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.6666666666666666,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.68,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 98,
+        "2": 2,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_door_sloweps/agent.pt",
+    "score": 1.1533333333333333
+  },
+  {
+    "name": "E_deep_soft_door",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "soft_target",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 0.005,
+      "target_update_freq": 1,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5003,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T00:01:37.151733+00:00",
+    "finished_at": "2026-07-18T00:18:09.299102+00:00",
+    "wall_seconds": 988.1038438749965,
+    "steps_per_sec": 253.00984461267527,
+    "eval": {
+      "mean_return": -18.19999999999999,
+      "std_return": 1.469693845669926,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.6,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.68,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 2,
+        "1": 0,
+        "2": 98,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_soft_door/agent.pt",
+    "score": 1.018
+  },
+  {
+    "name": "E_deep_lowstep_slow",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "low_step_cost",
+    "shaping": {
+      "step_penalty": 0.02,
+      "door_open": 20.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5009,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T02:16:36.026349+00:00",
+    "finished_at": "2026-07-18T02:32:48.267572+00:00",
+    "wall_seconds": 968.2320648749883,
+    "steps_per_sec": 258.20256224656055,
+    "eval": {
+      "mean_return": -1.66666666666666,
+      "std_return": 2.4944382578493043,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.4666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.64,
+      "stage_door": 0.02,
+      "stage_right": 0.02,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 2,
+        "2": 2,
+        "3": 48,
+        "4": 48,
+        "5": 0
+      },
+      "success": false,
+      "return": 3.0000000000000187,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_lowstep_slow/agent.pt",
+    "score": 0.9166666666666667
+  },
+  {
+    "name": "E_deep_rgb_door",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": false,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5004,
+    "obs_shape": [
+      64,
+      64,
+      3
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T00:18:09.340988+00:00",
+    "finished_at": "2026-07-18T00:35:05.470296+00:00",
+    "wall_seconds": 1012.1172291669936,
+    "steps_per_sec": 247.00696005912118,
+    "eval": {
+      "mean_return": -18.39999999999999,
+      "std_return": 1.496662954709596,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.5333333333333333,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.84,
+      "stage_door": 0.06,
+      "stage_right": 0.04,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 99,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_rgb_door/agent.pt",
+    "score": 0.8826666666666667
+  },
+  {
+    "name": "E_deep_keydoor",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "key_then_door",
+    "shaping": {
+      "key_pickup": 15.0,
+      "door_open": 30.0,
+      "enter_right_room": 10.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5002,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T23:45:23.548397+00:00",
+    "finished_at": "2026-07-18T00:01:37.120517+00:00",
+    "wall_seconds": 969.5553942080005,
+    "steps_per_sec": 257.8501460498987,
+    "eval": {
+      "mean_return": -12.999999999999993,
+      "std_return": 7.4833147735479075,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.4666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.64,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 50,
+        "1": 48,
+        "2": 2,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_keydoor/agent.pt",
+    "score": 0.8033333333333335
+  },
+  {
+    "name": "B_dqn_frequent_updates",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "frequent_updates",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 2,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 60000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2010,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T22:18:06.114090+00:00",
+    "finished_at": "2026-07-17T22:34:10.842378+00:00",
+    "wall_seconds": 960.8163770840038,
+    "steps_per_sec": 83.2625274798013,
+    "eval": {
+      "mean_return": -18.13333333333335,
+      "std_return": 6.984427121977994,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.06666666666666667,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.76,
+      "stage_door": 0.44,
+      "stage_right": 0.32,
+      "stage_water": 0.02,
+      "stage_lava": 0.02,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 99,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_frequent_updates/agent.pt",
+    "score": 0.6186666666666665
+  },
+  {
+    "name": "F_sparse_mid_slow",
+    "tags": [
+      "phaseF",
+      "deep"
+    ],
+    "dqn_preset": "very_slow_eps",
+    "shaping_preset": "sparse_mid",
+    "shaping": {
+      "water_pickup": 0.0,
+      "lava_extinguish": 0.0,
+      "enter_right_room": 0.0,
+      "door_open": 25.0,
+      "key_pickup": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.05,
+      "eps_decay_steps": 120000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 300,
+    "total_timesteps": 250000,
+    "seed": 6000,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T03:04:33.260530+00:00",
+    "finished_at": "2026-07-18T03:20:48.176917+00:00",
+    "wall_seconds": 969.0787041250151,
+    "steps_per_sec": 257.97698260816287,
+    "eval": {
+      "mean_return": -27.333333333333453,
+      "std_return": 3.7712361663283107,
+      "mean_length": 300.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.3333333333333333,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.78,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 48,
+        "1": 49,
+        "2": 3,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/F_sparse_mid_slow/agent.pt",
+    "score": 0.3933333333333321
+  },
+  {
+    "name": "D_horizon_150",
+    "tags": [
+      "phaseD",
+      "horizon"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 150,
+    "total_timesteps": 80000,
+    "seed": 4000,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T22:58:26.850181+00:00",
+    "finished_at": "2026-07-17T23:03:18.380901+00:00",
+    "wall_seconds": 288.4300414159952,
+    "steps_per_sec": 277.36361859969384,
+    "eval": {
+      "mean_return": -14.399999999999968,
+      "std_return": 1.1999999999999948,
+      "mean_length": 150.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.2,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.24,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 99,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/D_horizon_150/agent.pt",
+    "score": 0.25600000000000034
+  },
+  {
+    "name": "C_rgb_door",
+    "tags": [
+      "phaseC",
+      "obs"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": false,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 3001,
+    "obs_shape": [
+      64,
+      64,
+      3
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T22:53:26.739866+00:00",
+    "finished_at": "2026-07-17T22:58:26.802074+00:00",
+    "wall_seconds": 296.09988991699356,
+    "steps_per_sec": 270.179094029473,
+    "eval": {
+      "mean_return": -19.400000000000002,
+      "std_return": 1.2000000000000155,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.2,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.78,
+      "stage_door": 0.06,
+      "stage_right": 0.04,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 0,
+        "4": 99,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/C_rgb_door/agent.pt",
+    "score": 0.206
+  },
+  {
+    "name": "A_shape_low_step_cost",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "low_step_cost",
+    "shaping": {
+      "step_penalty": 0.02,
+      "door_open": 20.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1004,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T20:47:05.816001+00:00",
+    "finished_at": "2026-07-17T20:51:58.032924+00:00",
+    "wall_seconds": 288.25100891701004,
+    "steps_per_sec": 277.5358889482073,
+    "eval": {
+      "mean_return": -3.6666666666666665,
+      "std_return": 1.2472191289246526,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.52,
+      "stage_door": 0.02,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 99,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -2.0000000000000013,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_low_step_cost/agent.pt",
+    "score": 0.09666666666666666
+  },
+  {
+    "name": "A_shape_goal_dominant",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "goal_dominant",
+    "shaping": {
+      "goal_scale": 100.0,
+      "door_open": 15.0,
+      "key_pickup": 5.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1006,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T20:56:47.934178+00:00",
+    "finished_at": "2026-07-17T21:01:40.962038+00:00",
+    "wall_seconds": 288.9774504579982,
+    "steps_per_sec": 276.8382096015056,
+    "eval": {
+      "mean_return": -19.333333333333336,
+      "std_return": 1.6996731711976125,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.13333333333333333,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.38,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 100,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_goal_dominant/agent.pt",
+    "score": 0.0733333333333333
+  },
+  {
+    "name": "A_shape_no_enter_bonus",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "no_enter_bonus",
+    "shaping": {
+      "door_open": 25.0
+    },
+    "use_enter_right_room": false,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1008,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:06:31.461267+00:00",
+    "finished_at": "2026-07-17T21:11:22.789188+00:00",
+    "wall_seconds": 287.24413325000205,
+    "steps_per_sec": 278.50873434679426,
+    "eval": {
+      "mean_return": -19.333333333333336,
+      "std_return": 1.6996731711976123,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.13333333333333333,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.54,
+      "stage_door": 0.04,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 2,
+        "2": 1,
+        "3": 0,
+        "4": 97,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_no_enter_bonus/agent.pt",
+    "score": 0.0733333333333333
+  },
+  {
+    "name": "B_dqn_low_gamma",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "low_gamma",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.9,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2007,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:51:27.757131+00:00",
+    "finished_at": "2026-07-17T21:56:45.642063+00:00",
+    "wall_seconds": 313.86391820799327,
+    "steps_per_sec": 254.887533606157,
+    "eval": {
+      "mean_return": -19.600000000000005,
+      "std_return": 1.0198039027185704,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.13333333333333333,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.4,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 100
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_low_gamma/agent.pt",
+    "score": 0.0706666666666666
+  },
+  {
+    "name": "E_deep_door_extreme",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "very_slow_eps",
+    "shaping_preset": "door_extreme",
+    "shaping": {
+      "door_open": 40.0,
+      "key_pickup": 2.0,
+      "enter_right_room": 15.0,
+      "step_penalty": 0.05
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.05,
+      "eps_decay_steps": 120000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5001,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T23:29:19.488925+00:00",
+    "finished_at": "2026-07-17T23:45:23.517211+00:00",
+    "wall_seconds": 960.0961955839884,
+    "steps_per_sec": 260.39057455897415,
+    "eval": {
+      "mean_return": -9.866666666666669,
+      "std_return": 0.49888765156986525,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.2,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 100,
+        "5": 0
+      },
+      "success": false,
+      "return": -4.99999999999999,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_door_extreme/agent.pt",
+    "score": 0.03466666666666664
+  },
+  {
+    "name": "E_deep_high_gamma",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "high_gamma",
+    "shaping_preset": "door_extreme",
+    "shaping": {
+      "door_open": 40.0,
+      "key_pickup": 2.0,
+      "enter_right_room": 15.0,
+      "step_penalty": 0.05
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.99,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 60000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5006,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T01:27:09.405461+00:00",
+    "finished_at": "2026-07-18T01:43:23.817831+00:00",
+    "wall_seconds": 970.382455791987,
+    "steps_per_sec": 257.6303791436131,
+    "eval": {
+      "mean_return": -9.86666666666667,
+      "std_return": 0.4988876515698653,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.48,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 2,
+        "2": 2,
+        "3": 48,
+        "4": 48,
+        "5": 0
+      },
+      "success": false,
+      "return": -2.9999999999999987,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_high_gamma/agent.pt",
+    "score": 0.03466666666666662
+  },
+  {
+    "name": "A_shape_sparse_mid",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "sparse_mid",
+    "shaping": {
+      "water_pickup": 0.0,
+      "lava_extinguish": 0.0,
+      "enter_right_room": 0.0,
+      "door_open": 25.0,
+      "key_pickup": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1007,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:01:41.001188+00:00",
+    "finished_at": "2026-07-17T21:06:31.420557+00:00",
+    "wall_seconds": 286.3965185420093,
+    "steps_per_sec": 279.3330044906444,
+    "eval": {
+      "mean_return": -19.466666666666676,
+      "std_return": 1.9955506062794486,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.42,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 100
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_sparse_mid/agent.pt",
+    "score": -0.061333333333333434
+  },
+  {
+    "name": "A_shape_default6a",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "default6a",
+    "shaping": {},
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1000,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T20:27:15.764291+00:00",
+    "finished_at": "2026-07-17T20:32:22.890982+00:00",
+    "wall_seconds": 302.3981413750007,
+    "steps_per_sec": 264.5518905514464,
+    "eval": {
+      "mean_return": -19.666666666666675,
+      "std_return": 1.24721912892466,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.42,
+      "stage_door": 0.04,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 99,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_default6a/agent.pt",
+    "score": -0.06333333333333344
+  },
+  {
+    "name": "A_shape_lava_aware",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "lava_aware",
+    "shaping": {
+      "lava_death": 25.0,
+      "lava_extinguish": 10.0,
+      "door_open": 20.0,
+      "water_pickup": 5.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1009,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:11:22.844723+00:00",
+    "finished_at": "2026-07-17T21:16:15.390327+00:00",
+    "wall_seconds": 288.4840281659999,
+    "steps_per_sec": 277.3117129173137,
+    "eval": {
+      "mean_return": -19.666666666666675,
+      "std_return": 1.24721912892466,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.48,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 100,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_lava_aware/agent.pt",
+    "score": -0.06333333333333344
+  },
+  {
+    "name": "E_deep_default_long",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "exp10b_fast",
+    "shaping_preset": "default6a",
+    "shaping": {},
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5007,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T01:43:23.849151+00:00",
+    "finished_at": "2026-07-18T01:59:52.470187+00:00",
+    "wall_seconds": 984.5701042499859,
+    "steps_per_sec": 253.91792714490558,
+    "eval": {
+      "mean_return": -19.666666666666675,
+      "std_return": 1.2472191289246601,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.4,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 0,
+        "4": 99,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_default_long/agent.pt",
+    "score": -0.06333333333333344
+  },
+  {
+    "name": "B_dqn_slow_eps",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2001,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:21:27.813035+00:00",
+    "finished_at": "2026-07-17T21:26:18.792479+00:00",
+    "wall_seconds": 287.00573325000005,
+    "steps_per_sec": 278.7400763535095,
+    "eval": {
+      "mean_return": -19.800000000000004,
+      "std_return": 0.7483314773547982,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.4,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 99,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_slow_eps/agent.pt",
+    "score": -0.0646666666666667
+  },
+  {
+    "name": "B_dqn_soft_target",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "soft_target",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 0.005,
+      "target_update_freq": 1,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2003,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:31:00.143267+00:00",
+    "finished_at": "2026-07-17T21:36:13.635290+00:00",
+    "wall_seconds": 309.32072820801113,
+    "steps_per_sec": 258.63122870382557,
+    "eval": {
+      "mean_return": -19.800000000000004,
+      "std_return": 0.7483314773547982,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.44,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 2,
+        "1": 0,
+        "2": 1,
+        "3": 97,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_soft_target/agent.pt",
+    "score": -0.0646666666666667
+  },
+  {
+    "name": "D_horizon_200",
+    "tags": [
+      "phaseD",
+      "horizon"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 4001,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T23:03:18.410003+00:00",
+    "finished_at": "2026-07-17T23:08:11.105970+00:00",
+    "wall_seconds": 288.73533095800667,
+    "steps_per_sec": 277.07035275026703,
+    "eval": {
+      "mean_return": -19.800000000000004,
+      "std_return": 0.7483314773547982,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.32,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 100,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/D_horizon_200/agent.pt",
+    "score": -0.0646666666666667
+  },
+  {
+    "name": "C_gray_door",
+    "tags": [
+      "phaseC",
+      "obs"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 3000,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T22:48:39.366059+00:00",
+    "finished_at": "2026-07-17T22:53:26.705354+00:00",
+    "wall_seconds": 283.4624495419994,
+    "steps_per_sec": 282.22433034519713,
+    "eval": {
+      "mean_return": -19.800000000000008,
+      "std_return": 0.748331477354798,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.34,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 99,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/C_gray_door/agent.pt",
+    "score": -0.06466666666666676
+  },
+  {
+    "name": "E_deep_vanilla_door",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "vanilla_dqn",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": false,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5010,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T02:32:48.301753+00:00",
+    "finished_at": "2026-07-18T02:48:16.517023+00:00",
+    "wall_seconds": 924.2288078340061,
+    "steps_per_sec": 270.4957883599108,
+    "eval": {
+      "mean_return": -19.800000000000008,
+      "std_return": 0.748331477354798,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.48,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 100,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_vanilla_door/agent.pt",
+    "score": -0.06466666666666676
+  },
+  {
+    "name": "A_shape_door_extreme",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_extreme",
+    "shaping": {
+      "door_open": 40.0,
+      "key_pickup": 2.0,
+      "enter_right_room": 15.0,
+      "step_penalty": 0.05
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1002,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T20:37:18.660669+00:00",
+    "finished_at": "2026-07-17T20:42:12.228668+00:00",
+    "wall_seconds": 289.52193375000206,
+    "steps_per_sec": 276.3175796866528,
+    "eval": {
+      "mean_return": -10.000000000000004,
+      "std_return": 3.552713678800501e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.58,
+      "stage_door": 0.02,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 0,
+        "4": 99,
+        "5": 0
+      },
+      "success": false,
+      "return": -4.99999999999999,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_door_extreme/agent.pt",
+    "score": -0.10000000000000003
+  },
+  {
+    "name": "D_horizon_300",
+    "tags": [
+      "phaseD",
+      "horizon"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 300,
+    "total_timesteps": 80000,
+    "seed": 4002,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T23:08:11.135221+00:00",
+    "finished_at": "2026-07-17T23:13:04.986616+00:00",
+    "wall_seconds": 288.2642356669967,
+    "steps_per_sec": 277.5231544589393,
+    "eval": {
+      "mean_return": -29.80000000000016,
+      "std_return": 0.7483314773547982,
+      "mean_length": 300.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.42,
+      "stage_door": 0.04,
+      "stage_right": 0.02,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 100,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/D_horizon_300/agent.pt",
+    "score": -0.16466666666666827
+  },
+  {
+    "name": "A_shape_door_heavy",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1001,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T20:32:22.922722+00:00",
+    "finished_at": "2026-07-17T20:37:18.629879+00:00",
+    "wall_seconds": 291.71436079200066,
+    "steps_per_sec": 274.2408696740231,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.4,
+      "stage_door": 0.02,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 99,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_door_heavy/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "A_shape_key_then_door",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "key_then_door",
+    "shaping": {
+      "key_pickup": 15.0,
+      "door_open": 30.0,
+      "enter_right_room": 10.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1003,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T20:42:12.262730+00:00",
+    "finished_at": "2026-07-17T20:47:05.774094+00:00",
+    "wall_seconds": 289.5080021670001,
+    "steps_per_sec": 276.33087652566064,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.32,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 100
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_key_then_door/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "B_dqn_exp10b_fast",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "exp10b_fast",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2000,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:16:15.431321+00:00",
+    "finished_at": "2026-07-17T21:21:27.773508+00:00",
+    "wall_seconds": 308.2912227909983,
+    "steps_per_sec": 259.49489990584283,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.3,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 99,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_exp10b_fast/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "B_dqn_high_gamma",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "high_gamma",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.99,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 60000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2006,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:46:25.621103+00:00",
+    "finished_at": "2026-07-17T21:51:27.726933+00:00",
+    "wall_seconds": 298.04891700000735,
+    "steps_per_sec": 268.41231568708577,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.52,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 100,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_high_gamma/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "B_dqn_long_buffer",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "long_buffer",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 200000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2013,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T22:43:54.477551+00:00",
+    "finished_at": "2026-07-17T22:48:39.328969+00:00",
+    "wall_seconds": 280.8649068329978,
+    "steps_per_sec": 284.8344455064583,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.16,
+      "stage_door": 0.02,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 100,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_long_buffer/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "B_dqn_lr_high",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "lr_high",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.0005,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 60000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2011,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T22:34:10.872288+00:00",
+    "finished_at": "2026-07-17T22:39:03.419634+00:00",
+    "wall_seconds": 288.57085849999567,
+    "steps_per_sec": 277.2282704353572,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.3,
+      "stage_door": 0.04,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 100,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_lr_high/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "B_dqn_lr_low",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "lr_low",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.0001,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 60000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2012,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T22:39:03.449646+00:00",
+    "finished_at": "2026-07-17T22:43:54.448964+00:00",
+    "wall_seconds": 287.081604957988,
+    "steps_per_sec": 278.6664091964629,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.28,
+      "stage_door": 0.02,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 99,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_lr_low/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "B_dqn_small_batch",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "small_batch",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 32,
+      "train_freq": 4,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2009,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T22:12:27.854494+00:00",
+    "finished_at": "2026-07-17T22:18:06.084149+00:00",
+    "wall_seconds": 334.3292377500038,
+    "steps_per_sec": 239.2850847816677,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.5,
+      "stage_door": 0.02,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 100
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_small_batch/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "B_dqn_soft_fast",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "soft_fast",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 0.01,
+      "target_update_freq": 1,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2004,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:36:13.673108+00:00",
+    "finished_at": "2026-07-17T21:41:30.143785+00:00",
+    "wall_seconds": 312.4699117499986,
+    "steps_per_sec": 256.0246506678266,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.32,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 100,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_soft_fast/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "B_dqn_vanilla_dqn",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "vanilla_dqn",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 20000,
+      "learning_starts": 1000,
+      "double_dqn": false,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2005,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:41:30.180981+00:00",
+    "finished_at": "2026-07-17T21:46:25.586040+00:00",
+    "wall_seconds": 291.28932574999635,
+    "steps_per_sec": 274.6410284483313,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.44,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 2,
+        "2": 0,
+        "3": 0,
+        "4": 98,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_vanilla_dqn/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "B_dqn_very_slow_eps",
+    "tags": [
+      "phaseB",
+      "dqn"
+    ],
+    "dqn_preset": "very_slow_eps",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.05,
+      "eps_decay_steps": 120000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 2002,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T21:26:18.844789+00:00",
+    "finished_at": "2026-07-17T21:31:00.104689+00:00",
+    "wall_seconds": 277.38370345799194,
+    "steps_per_sec": 288.4091567121048,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.56,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 100,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/B_dqn_very_slow_eps/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "E_deep_lrhigh_door",
+    "tags": [
+      "phaseE",
+      "deep"
+    ],
+    "dqn_preset": "lr_high",
+    "shaping_preset": "door_heavy",
+    "shaping": {
+      "door_open": 25.0,
+      "key_pickup": 3.0,
+      "enter_right_room": 8.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.0005,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.15,
+      "eps_decay_steps": 60000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 250000,
+    "seed": 5011,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-18T02:48:16.553215+00:00",
+    "finished_at": "2026-07-18T03:04:33.224399+00:00",
+    "wall_seconds": 972.7161153749912,
+    "steps_per_sec": 257.0122937704416,
+    "eval": {
+      "mean_return": -20.000000000000007,
+      "std_return": 7.105427357601002e-15,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.0,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.16,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 100,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -9.99999999999998,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/E_deep_lrhigh_door/agent.pt",
+    "score": -0.20000000000000007
+  },
+  {
+    "name": "A_shape_high_step_cost",
+    "tags": [
+      "phaseA",
+      "shaping"
+    ],
+    "dqn_preset": "slow_eps",
+    "shaping_preset": "high_step_cost",
+    "shaping": {
+      "step_penalty": 0.2,
+      "door_open": 20.0
+    },
+    "use_enter_right_room": true,
+    "hparams": {
+      "lr": 0.000281,
+      "gamma": 0.95,
+      "batch_size": 64,
+      "train_freq": 8,
+      "gradient_steps": 1,
+      "tau": 1.0,
+      "target_update_freq": 500,
+      "eps_start": 1.0,
+      "eps_end": 0.1,
+      "eps_decay_steps": 80000,
+      "learning_starts": 1000,
+      "double_dqn": true,
+      "buffer_size": 100000,
+      "log_loss_every": 100
+    },
+    "grayscale": true,
+    "max_steps": 200,
+    "total_timesteps": 80000,
+    "seed": 1005,
+    "obs_shape": [
+      64,
+      64,
+      1
+    ],
+    "n_actions": 6,
+    "device": "mps",
+    "started_at": "2026-07-17T20:51:58.070513+00:00",
+    "finished_at": "2026-07-17T20:56:47.899513+00:00",
+    "wall_seconds": 285.65871524999966,
+    "steps_per_sec": 280.05446964916325,
+    "eval": {
+      "mean_return": -39.66666666666668,
+      "std_return": 1.247219128924663,
+      "mean_length": 200.0,
+      "success_rate": 0.0,
+      "n_episodes": 15.0,
+      "stage_key": 0.06666666666666667,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0
+    },
+    "late_stages": {
+      "stage_key": 0.58,
+      "stage_door": 0.0,
+      "stage_right": 0.0,
+      "stage_water": 0.0,
+      "stage_lava": 0.0,
+      "stage_goal": 0.0,
+      "episode_success": 0.0
+    },
+    "diagnose": {
+      "action_counts": {
+        "0": 0,
+        "1": 1,
+        "2": 0,
+        "3": 99,
+        "4": 0,
+        "5": 0
+      },
+      "success": false,
+      "return": -19.99999999999996,
+      "steps": 100
+    },
+    "checkpoint": "/Users/EyalsMac/University/Masters/Reinforcment Learning/Final Project/RLEX3/graphs/overnight_complex/A_shape_high_step_cost/agent.pt",
+    "score": -0.2633333333333334
+  }
+]
