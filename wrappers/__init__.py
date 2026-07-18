@@ -1,6 +1,6 @@
 """Environment wrappers for preprocessing and reward shaping."""
 
-from .complex import ComplexShapingWrapper, DEFAULT_COMPLEX_SHAPING
+from .complex import ComplexShapingWrapper, DEFAULT_COMPLEX_SHAPING, EventShapingWrapper
 from .crop import CropOuterWallsWrapper
 from .obs_action import ActionSubsetWrapper, GrayscaleWrapper
 from .resize import ResizeObsWrapper
@@ -12,6 +12,7 @@ __all__ = [
     "ComplexShapingWrapper",
     "DEFAULT_COMPLEX_SHAPING",
     "CropOuterWallsWrapper",
+    "EventShapingWrapper",
     "GrayscaleWrapper",
     "ResizeObsWrapper",
     "SimpleRoomShapingWrapper",

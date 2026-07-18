@@ -82,9 +82,7 @@ class ReplayBuffer:
 class QNetwork(nn.Module):
     """CNN for MiniGrid frames (HWC or CHW). Gentler than Nature-Atari strides.
 
-    ``width_mult`` scales conv/head channels (1 ≈ 0.47M params; params ~ width²).
-    ``n_extra_conv`` adds that many extra 3×3 stride-1 layers at the top width.
-    ``fc_mult`` scales only the MLP head width (on top of ``width_mult``).
+    ``width_mult`` scales conv/head width (1 = original ~0.47M params; 2 ≈ 4× params).
     """
 
     def __init__(

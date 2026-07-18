@@ -131,8 +131,8 @@ Plots and figures live in [`graphs/`](graphs/).
 
 - **Date:** 2026-07-17
 - **Symptom:** 10k ComplexEnv smoke ≈ **2.5 min** (~67 steps/s) with `n_envs=8`, `train_freq=4`
-- **CPU check:** full ComplexEnv stack ≈ **0.4 ms/step** (~2400 steps/s). CPU is *not* the bottleneck; Activity Monitor may look busy from Python + MPS driver, but env render is cheap.
-- **Cause:** SyncVectorEnv runs 8 envs **serially**, then the old vec learn loop fired **2 SGD updates per vector step** (8/4). MPS update ≈ 14–45 ms → wall-clock still update-bound. CPU DQN updates are *worse* (~470 ms @ bs128) — stay on MPS.
+- **CPU check:** full ComplexEnv stack ≈ **0.4 ms/step** (~2400 steps/s). CPU is _not_ the bottleneck; Activity Monitor may look busy from Python + MPS driver, but env render is cheap.
+- **Cause:** SyncVectorEnv runs 8 envs **serially**, then the old vec learn loop fired **2 SGD updates per vector step** (8/4). MPS update ≈ 14–45 ms → wall-clock still update-bound. CPU DQN updates are _worse_ (~470 ms @ bs128) — stay on MPS.
 - **Fixes:**
   - Vec learn: **one** update burst per `train_freq` threshold (not `n_envs/train_freq` bursts)
   - Smoke defaults → `n_envs=1`, `train_freq=8`, `batch_size=64`, hard target `tau=1` / `target_update_freq=500`
@@ -166,12 +166,13 @@ Plots and figures live in [`graphs/`](graphs/).
   | **tile=12** | `tile12_arch1` (overnight baseline class) | `tile12_arch2` |
   | **tile=16** | `tile16_arch1` | `tile16_arch2` |
 - **Runner:** `scripts/ab_tile16.py` → `graphs/ab_tile_arch/`
-- **Note:** CNN input stays `64×64`; tile=16 only changes render resolution *before* crop/inset/resize (sharper nearest downsample).
+- **Note:** CNN input stays `64×64`; tile=16 only changes render resolution _before_ crop/inset/resize (sharper nearest downsample).
 - **Partial results:** `tile12_arch2` best late door (56%) vs arch1 (38%); same eval_door 27%. `tile16_arch1` weak (eval_door 7%). `tile16_arch2` mid-run looked strong (door~70% @100k) but unfinished.
 - **Notebook lock (user):** `tile_size=12`, **no `TileInsetWrapper`**, `frequent_updates` + `door_heavy`. Overnight removed from notebook.
 - **Arch sweep (6c):** DQN now supports `width_mult` / `n_extra_conv` / `fc_mult`. Notebook `_ARCH_SWEEP` = w2 (~1.9M), w3 (~4.2M), w4 (~7.4M), w3_deep, w3_widehead → `graphs/complex_arch_sweep_dqn/` via `RUN["complex_train"]`.
 - **Rainbow DQN:** `algorithms/rainbow.py` — Double + Dueling + NoisyNets + n-step(3) + PER + C51(51). Notebook: `_USE_RAINBOW=True` → `graphs/complex_arch_sweep_rainbow/` with `rb_w1` only.
 - **Leave-right / key-drop (6d):** `leave_right_room` −every backtrack; `enter_right_room` +first entry; `key_drop` +first drop **in right room**; `key_drop_locked_left` −every drop in left while door locked. `door_heavy`: enter/leave ±8, key_drop +10, key_drop_locked_left −8.
+- **Monitor:** `tail -f graphs/ab_tile_arch/run.log` · `LEADERBOARD.md`
 
 ## Experiment 11: Colab CUDA long run (~132k) — stuck at door
 
@@ -182,7 +183,7 @@ Plots and figures live in [`graphs/`](graphs/).
 - **Setup:** gray `64×64×1`, actions 0–5, CUDA, SimpleRoom-ish hypers (`eps→0.15` by ~20k)
 - **Results (@132k / 660 eps):**
   - `succ20=0%` entire run; goal/water/lava/right = **0%**
-  - `key` oscillates **20–70%** (no upward trend; sometimes *worse* late)
+  - `key` oscillates **20–70%** (no upward trend; sometimes _worse_ late)
   - `door` almost always **0%**, rare **5%** blips — never learns to open
   - `mean20` return stuck **≈ −16…−19** (step-penalty dominated)
 - **Interpretation:** **Key is reachable by chance; door is the hard bottleneck.** More of the same budget/hparams will not finish the task. Overnight 6c must vary **shaping (door-heavy)**, **ε schedule (slower decay)**, and DQN knobs — score trials by `stage_door` / `stage_right`, not goal alone.
@@ -201,4 +202,3 @@ Plots and figures live in [`graphs/`](graphs/).
   - Video: `videos/dqn_simple_room_gray_exp7.mp4` (11 steps, return 48.9)
 - **Notes:** **Grayscale ≈ RGB** under winner hypers. Exp4 spin was hypers/training, not grayscale itself.
   Adopt **grayscale** as SimpleRoom default (cheaper `64×64×1`). ComplexEnv 6a also starts grayscale (user choice).
-

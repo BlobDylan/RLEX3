@@ -8,11 +8,21 @@ Living checklist for the final project. Update the **Current step** marker as we
 
 > **Step 6c / 6d — ComplexEnv train + unstick**
 >
+> <<<<<<< HEAD
 > Status: Rainbow `rb_w1`; logs every **10 episodes**; shaping adds
 > **`leave_right_room`** (every backtrack) and **`key_drop_locked_left`**
 > (−every drop in left while door locked; `door_heavy` −8).
 >
-> **Next:** re-run factory cell + train; watch premature key-drop / door stick.
+> # **Next:** re-run factory cell + train; watch premature key-drop / door stick.
+>
+> Status: overnight partial; **Exp13 running** — 2×2 `tile∈{12,16}` ×
+> `width_mult∈{1,2}` on winner recipe (`frequent_updates`+`door_heavy`, 250k) →
+> `graphs/ab_tile_arch/`.
+>
+> **Next:** when Exp13 finishes, pick best cell; then push water/lava + fix greedy
+> collapse. Plots/videos from best run.
+>
+> > > > > > > master
 
 ---
 
@@ -83,7 +93,11 @@ _Report later — do not block Step 3 on polished write-up._
 
 ### 3.3 Exit criteria
 
-- [x] Training curves: return ↑, length ↓, success rate → **100%** `succ20` **sustained**
+<<<<<<< HEAD
+
+- [x] # Training curves: return ↑, length ↓, success rate → **100%** `succ20` **sustained**
+- [x] Training curves: return ↑, length ↓, success rate → **100% `succ20` sustained**
+  > > > > > > > master
 - [x] Greedy eval strong in Exp6 (@20k: **90%**); Exp6b train confirms solve
 - [x] Success video path in notebook (`dqn_simple_room_best.mp4`)
 - [x] Logged in `EXPERIMENTS.md` (Exp6 / Exp6b)
@@ -134,7 +148,7 @@ Assignment requires (x-axis = training episode; rolling averages OK):
 
 Also:
 
-- [x] Helpers to save figures into `graphs/` — `algorithms/plotting.py`
+- [x] Helpers to save figures into `graphs/` — `utils/plotting.py`
 - [x] Persist history JSON for kernel restarts
 - [x] Confirmed plots from Exp7 history (`graphs/dqn_gray_history_*.png`)
 - [x] Hypers + seeds logged in `EXPERIMENTS.md` (keep updated)
@@ -163,7 +177,7 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 - [x] Log stage reach-rates in training history / printouts (`stage_key` … `stage_goal`)
 - [x] Prefer `info["success"]` over raw `terminated` (lava death ≠ win)
 - [x] Throughput: `train_freq` / sparse loss sync (Exp10); **Exp10b** Mac defaults (`n_envs=1`, `freq=8`)
-- [x] Short DQN smoke (~~10k) — stage logs OK; Exp10b re-run \*\*~~35s\*\* on MPS
+- [x] Short DQN smoke (~10k) — stage logs OK; Exp10b re-run **~35s** on MPS
 
 **Exit:** metrics wired; smoke does not crash; early stages move (even if goal = 0%). ✓
 
