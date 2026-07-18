@@ -34,6 +34,9 @@ class ReplayBuffer:
         self.rewards = np.empty((capacity,), dtype=np.float32)
         # Bootstrapping mask: True only on real terminals (goal), NOT timeouts.
         self.terminateds = np.empty((capacity,), dtype=np.float32)
+        # Per-transition bootstrap discount (gamma**k for a k-step return; 0 on
+        # terminal). Lets one buffer serve both 1-step and n-step targets.
+        self.discounts = np.empty((capacity,), dtype=np.float32)
 
     def __len__(self) -> int:
         return self.size
@@ -45,12 +48,14 @@ class ReplayBuffer:
         reward: float,
         next_obs: np.ndarray,
         terminated: bool,
+        discount: float,
     ) -> None:
         self.obs[self.ptr] = obs
         self.next_obs[self.ptr] = next_obs
         self.actions[self.ptr] = action
         self.rewards[self.ptr] = reward
         self.terminateds[self.ptr] = float(terminated)
+        self.discounts[self.ptr] = float(discount)
 
         self.ptr = (self.ptr + 1) % self.capacity
         self.size = min(self.size + 1, self.capacity)
@@ -72,7 +77,60 @@ class ReplayBuffer:
         actions = _to(self.actions[idx], torch.int64)
         rewards = _to(self.rewards[idx], torch.float32)
         terminateds = _to(self.terminateds[idx], torch.float32)
-        return obs, actions, rewards, next_obs, terminateds
+        discounts = _to(self.discounts[idx], torch.float32)
+        return obs, actions, rewards, next_obs, terminateds, discounts
+
+
+# ---------------------------------------------------------------------------
+# n-step return accumulator
+# ---------------------------------------------------------------------------
+
+class _NStepAccumulator:
+    """Aggregate 1-step transitions into n-step returns for the replay buffer.
+
+    Emits ``(obs, action, R, next_obs, terminated, discount)`` where ``R`` is the
+    discounted k-step reward (k ≤ n) and ``discount = gamma**k`` — except on a real
+    terminal, where ``discount = 0`` so the target does not bootstrap past the end
+    of the episode. Use one accumulator per env stream; ``flush`` it on episode end
+    to emit the shorter-horizon tail (which may include the goal transition).
+    """
+
+    def __init__(self, n: int, gamma: float) -> None:
+        self.n = max(1, int(n))
+        self.gamma = float(gamma)
+        self._buf: deque = deque()  # (obs, action, reward, next_obs, terminated)
+
+    def push(self, obs, action, reward, next_obs, terminated) -> list:
+        """Add a 1-step transition; return any ready n-step transitions."""
+        self._buf.append((obs, int(action), float(reward), next_obs, bool(terminated)))
+        out = []
+        if len(self._buf) >= self.n:
+            out.append(self._pop_nstep())
+        return out
+
+    def flush(self) -> list:
+        """Emit all remaining (shorter-horizon) transitions at an episode boundary."""
+        out = []
+        while self._buf:
+            out.append(self._pop_nstep())
+        return out
+
+    def _pop_nstep(self) -> tuple:
+        obs0, a0 = self._buf[0][0], self._buf[0][1]
+        ret = 0.0
+        discount = 1.0
+        next_obs = self._buf[0][3]
+        terminated = False
+        for (_, _, r, n_obs, t) in self._buf:
+            ret += discount * r
+            next_obs = n_obs
+            discount *= self.gamma
+            if t:
+                terminated = True
+                break
+        boot_discount = 0.0 if terminated else discount  # gamma**k, or 0 on terminal
+        self._buf.popleft()
+        return (obs0, a0, ret, next_obs, terminated, boot_discount)
 
 
 # ---------------------------------------------------------------------------
@@ -136,8 +194,12 @@ class QNetwork(nn.Module):
 
     @staticmethod
     def _is_channels_last(shape: tuple[int, ...]) -> bool:
-        # MiniGrid / GrayscaleWrapper emit (H, W, C) with C in {1, 3}.
-        return len(shape) == 3 and shape[-1] in (1, 3) and shape[0] > 3
+        # HWC when the last dim is a small channel count (1, 3, or stacked
+        # multiples like 4 / 12) and the leading dims are spatial (H, W > C).
+        if len(shape) != 3:
+            return False
+        h, w, c = shape
+        return c <= 16 and h > c and w > c
 
     def _nchw(self, x: torch.Tensor) -> torch.Tensor:
         if self.channels_last:
@@ -176,6 +238,10 @@ class DQN(BaseAlgorithm):
         eps_start: float = 1.0,
         eps_end: float = 0.05,
         eps_decay_steps: int = 50_000,
+        n_step: int = 1,
+        reward_scale: float = 1.0,
+        rnd_coef: float = 0.0,
+        rnd_lr: float = 1e-4,
         log_loss_every: int = 50,
         width_mult: int = 1,
         n_extra_conv: int = 0,
@@ -199,6 +265,18 @@ class DQN(BaseAlgorithm):
         self.width_mult = max(1, int(width_mult))
         self.n_extra_conv = max(0, int(n_extra_conv))
         self.fc_mult = max(1, int(fc_mult))
+        # n-step returns: propagate reward faster over the long ComplexEnv chain.
+        self.n_step = max(1, int(n_step))
+        # Reward scaling keeps Q ~ O(1); large raw shaping rewards otherwise push
+        # Q ~ hundreds and wreck the value SNR (which stalled learning).
+        self.reward_scale = float(reward_scale)
+        # RND intrinsic exploration: a novelty bonus (on the scaled reward's O(1)
+        # scale) that drives the agent into unseen states (0 → off).
+        self.rnd_coef = float(rnd_coef)
+        self.rnd = None
+        if self.rnd_coef > 0.0:
+            from .rnd import RNDExploration
+            self.rnd = RNDExploration(obs_shape, self.device, lr=rnd_lr)
 
         _arch = dict(
             width_mult=self.width_mult,
@@ -316,7 +394,7 @@ class DQN(BaseAlgorithm):
                 tp.data.mul_(1.0 - self.tau).add_(p.data, alpha=self.tau)
 
     def update(self, *, return_loss: bool | None = None) -> float | None:
-        """One gradient step on a minibatch. Returns loss, or None if skipped.
+        """One Double-DQN gradient step on a replay minibatch (n-step targets).
 
         ``return_loss`` defaults to logging every ``log_loss_every`` updates so we
         avoid a host↔device sync (``loss.item()``) on every step — critical on MPS.
@@ -324,7 +402,7 @@ class DQN(BaseAlgorithm):
         if len(self.buffer) < max(self.batch_size, self.learning_starts):
             return None
 
-        obs, actions, rewards, next_obs, terminateds = self.buffer.sample(
+        obs, actions, rewards, next_obs, terminateds, discounts = self.buffer.sample(
             self.batch_size, self.device
         )
 
@@ -336,7 +414,9 @@ class DQN(BaseAlgorithm):
                 ).squeeze(1)
             else:
                 next_q = self.target_net(next_obs).max(dim=1).values
-            targets = rewards + (1.0 - terminateds) * self.gamma * next_q
+            # ``discounts`` already carries gamma**k for the k-step return (0 on
+            # terminal), so no extra self.gamma factor here.
+            targets = rewards + (1.0 - terminateds) * discounts * next_q
 
         q_values = self.q_net(obs).gather(1, actions.unsqueeze(1)).squeeze(1)
         loss = F.smooth_l1_loss(q_values, targets)
@@ -348,6 +428,11 @@ class DQN(BaseAlgorithm):
 
         self._updates += 1
         self._sync_target()
+
+        # Train the RND predictor toward the frozen target on these observations,
+        # so novelty (intrinsic reward) fades as states become familiar.
+        if self.rnd is not None:
+            self.rnd.train(obs)
 
         if return_loss is None:
             if self.log_loss_every <= 0:
@@ -460,6 +545,7 @@ class DQN(BaseAlgorithm):
         obs, info = env.reset(seed=self.seed)
         ep_return = 0.0
         ep_len = 0
+        nstep = _NStepAccumulator(self.n_step, self.gamma)
         recent_returns: deque[float] = deque(maxlen=20)
         recent_success: deque[float] = deque(maxlen=20)
         recent_stages: dict[str, deque[float]] = {
@@ -473,7 +559,11 @@ class DQN(BaseAlgorithm):
             episode_done = bool(terminated or truncated)
             success = self._success_from_info(info, terminated)
 
-            self.buffer.add(obs, action, float(reward), next_obs, bool(terminated))
+            r_store = float(reward) * self.reward_scale
+            if self.rnd is not None:
+                r_store += self.rnd_coef * float(self.rnd.intrinsic(next_obs[None])[0])
+            for tr in nstep.push(obs, action, r_store, next_obs, bool(terminated)):
+                self.buffer.add(*tr)
             obs = next_obs
             ep_return += float(reward)
             ep_len += 1
@@ -481,6 +571,8 @@ class DQN(BaseAlgorithm):
             self._maybe_learn(history)
 
             if episode_done:
+                for tr in nstep.flush():
+                    self.buffer.add(*tr)
                 self.total_episodes += 1
                 saw_stages = self._log_episode(
                     history,
@@ -518,6 +610,7 @@ class DQN(BaseAlgorithm):
         obss, infos = envs.reset(seed=reset_seeds)
         ep_returns = np.zeros(n_envs, dtype=np.float64)
         ep_lens = np.zeros(n_envs, dtype=np.int64)
+        nsteps = [_NStepAccumulator(self.n_step, self.gamma) for _ in range(n_envs)]
         recent_returns: deque[float] = deque(maxlen=20)
         recent_success: deque[float] = deque(maxlen=20)
         recent_stages: dict[str, deque[float]] = {
@@ -530,6 +623,7 @@ class DQN(BaseAlgorithm):
             actions = self.select_actions(obss, explore=True)
             next_obss, rewards, terminateds, truncateds, infos = envs.step(actions)
             dones = np.logical_or(terminateds, truncateds)
+            intrinsic = self.rnd.intrinsic(next_obss) if self.rnd is not None else None
 
             for i in range(n_envs):
                 if self.total_steps >= total_timesteps:
@@ -544,18 +638,20 @@ class DQN(BaseAlgorithm):
                             final = fo[i]
                     if final is not None:
                         next_obs_i = final
-                self.buffer.add(
-                    obss[i],
-                    int(actions[i]),
-                    float(rewards[i]),
-                    next_obs_i,
-                    term_i,
-                )
+                r_store = float(rewards[i]) * self.reward_scale
+                if intrinsic is not None:
+                    r_store += self.rnd_coef * float(intrinsic[i])
+                for tr in nsteps[i].push(
+                    obss[i], int(actions[i]), r_store, next_obs_i, term_i
+                ):
+                    self.buffer.add(*tr)
                 ep_returns[i] += float(rewards[i])
                 ep_lens[i] += 1
                 self.total_steps += 1
 
                 if dones[i]:
+                    for tr in nsteps[i].flush():
+                        self.buffer.add(*tr)
                     info_i = self._info_at(infos, i)
                     success = self._success_from_info(info_i, term_i)
                     self.total_episodes += 1

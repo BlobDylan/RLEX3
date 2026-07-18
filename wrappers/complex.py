@@ -166,25 +166,18 @@ class ComplexShapingWrapper(gym.Wrapper):
             and core.prev_carrying_key()
             and not core.is_carrying_key()
         )
-        # First drop of the key *in the right room* (hands free → can pick water).
+        # First key-drop once the door is open (hands free → can pick water). Dropping
+        # while the door is still locked is neither rewarded nor penalised — the key is
+        # on the floor and can be picked back up, so a penalty only froze exploration.
         if (
             just_dropped_key
             and not self._paid_key_drop
             and self.key_drop != 0.0
-            and core.is_in_right_room()
+            and core.is_door_open()
         ):
             shaped += self.key_drop
             breakdown["key_drop"] = self.key_drop
             self._paid_key_drop = True
-        elif (
-            just_dropped_key
-            and self.key_drop_locked_left != 0.0
-            and not core.is_in_right_room()
-            and not core.is_door_open()
-        ):
-            # Dropped key in left room before unlocking — every time.
-            shaped -= self.key_drop_locked_left
-            breakdown["key_drop_locked_left"] = -self.key_drop_locked_left
 
         if core.is_carrying_water() and not core.prev_carrying_water():
             waters_after = {(int(x), int(y)) for x, y in core.water_positions()}
@@ -270,3 +263,90 @@ class ComplexShapingWrapper(gym.Wrapper):
                 + self.lava_extinguish * 3.0  # lava ring size
             ),
         }
+
+
+class ComplexPotentialWrapper(gym.Wrapper):
+    """Potential-based reward shaping (Ng, Harada & Russell 1999) for ComplexEnv.
+
+    Reward = ``F + goal`` where ``F = gamma·Phi(s') - Phi(s)`` and ``Phi`` is a monotonic
+    count of task milestones reached (key → door → right-room → water → each lava tile).
+    Because ``F`` telescopes over a trajectory (Σ = γ^T·Phi(s_T) - Phi(s_0)), there is
+    **no bankable reward to camp on** — standing still at a stage is mildly negative and
+    only *progress* pays — yet the optimal policy is provably unchanged. The sparse goal
+    reward (``goal_scale``) is the one lasting reward; lava death is penalised.
+
+    Set ``gamma`` to the agent's discount so the shaping stays policy-invariant.
+    """
+
+    def __init__(
+        self,
+        env: gym.Env,
+        *,
+        gamma: float = 0.99,
+        potential_scale: float = 1.0,
+        goal_scale: float = 10.0,
+        lava_death: float = 5.0,
+    ) -> None:
+        super().__init__(env)
+        self.gamma = float(gamma)
+        self.potential_scale = float(potential_scale)
+        self.goal_scale = float(goal_scale)
+        self.lava_death = float(lava_death)
+        self._reset_latches()
+
+    def _reset_latches(self) -> None:
+        self._key = self._door = self._right = self._water = self._goal = False
+        self._lavas = 0
+        self._prev_phi = 0.0
+
+    def _progress(self) -> int:
+        return (
+            int(self._key) + int(self._door) + int(self._right)
+            + int(self._water) + int(self._lavas)
+        )
+
+    def _phi(self) -> float:
+        return self.potential_scale * self._progress()
+
+    def reset(self, **kwargs: Any):
+        obs, info = self.env.reset(**kwargs)
+        self._reset_latches()
+        self._prev_phi = self._phi()
+        return obs, self._augment(dict(info))
+
+    def step(self, action):
+        core = self.env.unwrapped
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        # Monotonic milestone latches → the potential only ever increases.
+        self._key = self._key or core.is_carrying_key()
+        self._door = self._door or core.is_door_open()
+        self._right = self._right or core.is_in_right_room()
+        self._water = self._water or core.is_carrying_water()
+        self._lavas = max(self._lavas, int(core.extinguished_lava_count()))
+        self._goal = self._goal or core.is_on_goal()
+
+        phi = self._phi()
+        done = bool(terminated or truncated)
+        # Potential shaping on non-terminal steps (Phi(terminal) := 0 by convention,
+        # but we let the sparse goal reward carry the final transition instead).
+        shaped = 0.0 if done else (self.gamma * phi - self._prev_phi)
+        self._prev_phi = phi
+
+        shaped += self.goal_scale * float(reward)  # env reward is +1 exactly on the goal
+        if terminated and not core.is_on_goal():
+            shaped -= self.lava_death
+
+        info = self._augment(dict(info))
+        info["success"] = bool(terminated and core.is_on_goal())
+        info["died_on_lava"] = bool(terminated and not core.is_on_goal())
+        return obs, shaped, terminated, truncated, info
+
+    def _augment(self, info: dict[str, Any]) -> dict[str, Any]:
+        info["stage_key"] = self._key
+        info["stage_door"] = self._door
+        info["stage_right"] = self._right
+        info["stage_water"] = self._water
+        info["stage_lava"] = self._lavas > 0
+        info["stage_goal"] = self._goal
+        return info

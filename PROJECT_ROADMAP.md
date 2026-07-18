@@ -196,6 +196,22 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 
 **Status:** pending _(optional)_
 
+**Diagnosis — two failure modes found (2026-07-18):**
+
+1. **Reward-hacking the key-drop bonus.** The `key_drop` shaping (+bonus for the
+   first key drop in the right room, plus the `leave_right_room` /
+   `key_drop_locked_left` terms) likely taught the agent to open the door and
+   immediately drop the key to bank the cheap shaping reward — then stall instead
+   of ferrying water. A classic shaping-induced local optimum: the bonus rewarded a
+   proxy (drop the key) rather than the intended behavior (free the hand _in order
+   to carry water_).
+2. **Inventory is invisible in the observation.** Rendering the env while carrying
+   a water ball vs. not is **pixel-identical** (verified: frame diff = 0 — the
+   carried object is removed from the grid and not drawn on the agent). "Am I
+   holding water?" is unobservable from a single frame, so a memoryless CNN cannot
+   represent the water → lava policy. Fix direction: frame-stacking or a recurrent
+   Q-net so the network can infer inventory from the pickup/consume transition.
+
 - [ ] Retune shaping magnitudes / step penalty / `max_steps`
 - [ ] Action or obs tweaks if justified
 - [ ] Hyperparam pass (reuse search tooling) if needed
