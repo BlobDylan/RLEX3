@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from algorithms.device import describe_device, get_torch_device
+from utils.device import describe_device, get_torch_device
 from scripts.overnight_complex import Trial, run_trial, write_leaderboard
 
 OUT = ROOT / "graphs" / "ab_tile_arch"

@@ -10,7 +10,7 @@ import numpy as np
 import torch
 
 
-from .device import get_torch_device, seed_everything
+from utils.device import get_torch_device, seed_everything
 
 
 class BaseAlgorithm(ABC):

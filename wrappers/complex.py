@@ -215,3 +215,27 @@ class ComplexShapingWrapper(gym.Wrapper):
                 + self.lava_extinguish * 3.0  # lava ring size
             ),
         }
+
+
+class EventShapingWrapper(gym.Wrapper):
+    """Minimal example: scale the sparse env reward and add tiny event-based shaping.
+
+    A starter template (kept out of the notebook) — reads ComplexEnv door getters to
+    pay a one-off bonus when the door first opens. ``ComplexShapingWrapper`` above is
+    the full, anti-farm version used by the training factories.
+    """
+
+    def __init__(self, env: gym.Env, base_reward_scale: float = 10.0,
+                 door_bonus: float = 1.0, step_penalty: float = 0.01) -> None:
+        super().__init__(env)
+        self.base_reward_scale = float(base_reward_scale)
+        self.door_bonus = float(door_bonus)
+        self.step_penalty = float(step_penalty)
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+        core_env = self.env.unwrapped
+        reward = self.base_reward_scale * float(reward) - self.step_penalty
+        if core_env.is_door_open() and not core_env.prev_door_open():   # door just opened
+            reward += self.door_bonus
+        return obs, reward, terminated, truncated, info

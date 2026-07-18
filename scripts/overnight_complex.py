@@ -27,9 +27,9 @@ if str(ROOT) not in sys.path:
 import numpy as np
 import torch
 
-from algorithms.device import describe_device, get_torch_device
 from algorithms.dqn import DQN
-from algorithms.plotting import plot_training_history, save_training_history
+from utils.device import describe_device, get_torch_device
+from utils.plotting import plot_training_history, save_training_history
 from envs import ComplexEnv
 from wrappers import (
     DEFAULT_COMPLEX_SHAPING,

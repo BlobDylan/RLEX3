@@ -19,29 +19,30 @@ Living checklist for the final project. Update the **Current step** marker as we
 
 ## Progress overview
 
-| Step | Topic | Status |
-|------|--------|--------|
-| 0 | Setup & template | done |
-| 1 | Understand envs + explorer | done |
-| 2 | Baseline wrappers + `BaseAlgorithm` + DQN scaffold | done |
-| 3 | DQN solves `SimpleRoomEnv` | **done** |
-| 4 | Observation pipeline (document / lock) | **done** (SimpleRoom; gray after Exp7) |
-| 5 | Training graphs & logging | **done** |
-| 6a | ComplexEnv: stack + event shaping | **done** |
-| 6b | ComplexEnv: stage metrics + short DQN smoke | **done** |
-| **6c** | **ComplexEnv: first real DQN train + graphs/videos** | **← now** |
-| 6d | ComplexEnv: unstick (tuning if 6c stalls) | pending |
-| 7 | Policy-based method (e.g. REINFORCE) | pending |
-| 8 | Actor-critic method (e.g. PPO / A2C) | pending |
-| 9 | Full training results & ComplexEnv stage progress | pending |
-| 10 | Inference comparison table / charts | pending |
-| 11 | Discussion + best settings cell | pending |
-| 12 | Videos (mid-training + converged) | partial |
-| 13 | Report + submission files | pending |
+| Step   | Topic                                                | Status                                 |
+| ------ | ---------------------------------------------------- | -------------------------------------- |
+| 0      | Setup & template                                     | done                                   |
+| 1      | Understand envs + explorer                           | done                                   |
+| 2      | Baseline wrappers + `BaseAlgorithm` + DQN scaffold   | done                                   |
+| 3      | DQN solves `SimpleRoomEnv`                           | **done**                               |
+| 4      | Observation pipeline (document / lock)               | **done** (SimpleRoom; gray after Exp7) |
+| 5      | Training graphs & logging                            | **done**                               |
+| 6a     | ComplexEnv: stack + event shaping                    | **done**                               |
+| 6b     | ComplexEnv: stage metrics + short DQN smoke          | **done**                               |
+| **6c** | **ComplexEnv: first real DQN train + graphs/videos** | **← now**                              |
+| 6d     | ComplexEnv: unstick (tuning if 6c stalls)            | pending                                |
+| 7      | Policy-based method (e.g. REINFORCE)                 | pending                                |
+| 8      | Actor-critic method (e.g. PPO / A2C)                 | pending                                |
+| 9      | Full training results & ComplexEnv stage progress    | pending                                |
+| 10     | Inference comparison table / charts                  | pending                                |
+| 11     | Discussion + best settings cell                      | pending                                |
+| 12     | Videos (mid-training + converged)                    | partial                                |
+| 13     | Report + submission files                            | pending                                |
 
 ---
 
 ## Step 0 — Setup & template
+
 **Status:** done
 
 - [x] Poetry / venv, GPU (`mps`), notebook kernel
@@ -51,6 +52,7 @@ Living checklist for the final project. Update the **Current step** marker as we
 ---
 
 ## Step 1 — Understand the environments
+
 **Status:** done (refine later in the report)
 
 **What this step is for:** characterize both MDPs before coding more.
@@ -59,11 +61,12 @@ Living checklist for the final project. Update the **Current step** marker as we
 - [ ] Write MDP notes for the report (episodic, pixel obs, observability, state-space size estimate)
 - [ ] Note differences that matter: horizon, sparsity, lava = lethal, recoverable vs non-recoverable mistakes
 
-*Report later — do not block Step 3 on polished write-up.*
+_Report later — do not block Step 3 on polished write-up._
 
 ---
 
 ## Step 2 — Scaffold: wrappers + algorithm base + DQN
+
 **Status:** done
 
 - [x] Example wrappers: `GrayscaleWrapper`, `EventShapingWrapper`, `ActionSubsetWrapper`
@@ -74,11 +77,13 @@ Living checklist for the final project. Update the **Current step** marker as we
 ---
 
 ## Step 3 — DQN must solve `SimpleRoomEnv`
+
 **Status:** done
 
 **Goal (pass/fail):** greedy policy reaches the green goal most of the time.
 
 ### 3.3 Exit criteria
+
 - [x] Training curves: return ↑, length ↓, success rate → **100% `succ20` sustained**
 - [x] Greedy eval strong in Exp6 (@20k: **90%**); Exp6b train confirms solve
 - [x] Success video path in notebook (`dqn_simple_room_best.mp4`)
@@ -90,6 +95,7 @@ Living checklist for the final project. Update the **Current step** marker as we
 ---
 
 ## Step 4 — Observation preprocessing (final pipeline)
+
 **Status:** done (SimpleRoom); ComplexEnv variant in **6a**
 
 Hard rule: **pixels only** into the network. Getters / positions = shaping & EDA only.
@@ -102,6 +108,7 @@ Exp4 gray-spin was bad hypers, not grayscale (Exp7: 90% greedy @ 20k, no spin).
 RGB remains a valid alternative; prefer **RGB on ComplexEnv** (color-coded objects).
 
 For each env, document and implement:
+
 - [x] Resolution / resize — `64×64`
 - [x] Color vs grayscale — **grayscale for SimpleRoom** (Exp7); **grayscale for ComplexEnv 6a** (user choice)
 - [x] Channel order + normalization — HWC uint8 → NCHW float in DQN
@@ -116,16 +123,19 @@ Prefer implementing this as real `gym.ObservationWrapper`s (and reuse for all al
 ---
 
 ## Step 5 — Training metrics & graphs
+
 **Status:** done
 
 Assignment requires (x-axis = training episode; rolling averages OK):
+
 - [x] Reward / return per episode — `plot_training_history` → `*_return.png`
 - [x] Steps per episode — `*_length.png`
 - [x] Success rate per episode — `*_success.png`
 - [x] **Cumulative env steps vs episode** — `*_cum_steps.png` (+ overview panel)
 
 Also:
-- [x] Helpers to save figures into `graphs/` — `algorithms/plotting.py`
+
+- [x] Helpers to save figures into `graphs/` — `utils/plotting.py`
 - [x] Persist history JSON for kernel restarts
 - [x] Confirmed plots from Exp7 history (`graphs/dqn_gray_history_*.png`)
 - [x] Hypers + seeds logged in `EXPERIMENTS.md` (keep updated)
@@ -138,6 +148,7 @@ Hard mission: key → door → water → lava → goal. Expect **partial progres
 Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pass.
 
 ### 6a — Env stack & event shaping
+
 **Status:** done
 
 - [x] Action subset `(0..5)`; grayscale `64×64×1`; first-time anti-farm shaping
@@ -147,6 +158,7 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 - [x] Documented in `EXPERIMENTS.md`
 
 ### 6b — Stage metrics + short DQN smoke
+
 **Status:** done
 
 - [x] Log stage reach-rates in training history / printouts (`stage_key` … `stage_goal`)
@@ -157,6 +169,7 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 **Exit:** metrics wired; smoke does not crash; early stages move (even if goal = 0%). ✓
 
 ### 6c — First real train + graphs / videos ← **YOU ARE HERE**
+
 **Status:** in progress / pending
 
 - [ ] Longer budget (e.g. 50–100k+ steps; adjust after smoke)
@@ -167,7 +180,8 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 **Exit:** logged run + plots + videos; clear “how far does DQN get?” answer.
 
 ### 6d — Unstick (only if 6c stalls)
-**Status:** pending *(optional)*
+
+**Status:** pending _(optional)_
 
 - [ ] Retune shaping magnitudes / step penalty / `max_steps`
 - [ ] Action or obs tweaks if justified
@@ -179,6 +193,7 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 ---
 
 ## Step 7 — Policy-based algorithm (e.g. REINFORCE)
+
 **Status:** pending
 
 - [ ] Implement from scratch (PyTorch nets only; no SB3 / RLlib / …)
@@ -189,6 +204,7 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 ---
 
 ## Step 8 — Actor-critic algorithm (e.g. PPO or A2C)
+
 **Status:** pending
 
 - [ ] Implement from scratch
@@ -199,6 +215,7 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 ---
 
 ## Step 9 — Training results & analysis
+
 **Status:** pending
 
 - [ ] All required plots for every algorithm × env
@@ -208,9 +225,11 @@ Do **not** start a long train until **6a** (and ideally **6b**) exit criteria pa
 ---
 
 ## Step 10 — Inference results
+
 **Status:** pending
 
 Greedy eval on fresh seeds:
+
 - [ ] Avg return, avg steps, success rate — all algos × both envs
 - [ ] ComplexEnv stage depth
 - [ ] Clear comparison table and/or grouped bar chart
@@ -218,6 +237,7 @@ Greedy eval on fresh seeds:
 ---
 
 ## Step 11 — Discussion & best settings
+
 **Status:** pending
 
 - [ ] Strengths / weaknesses per family × env
@@ -227,6 +247,7 @@ Greedy eval on fresh seeds:
 ---
 
 ## Step 12 — Videos
+
 **Status:** partial
 
 Rules: short clips **partway through training** and **after convergence**, in the notebook.
@@ -239,6 +260,7 @@ Rules: short clips **partway through training** and **after convergence**, in th
 ---
 
 ## Step 13 — Report & submission
+
 **Status:** pending
 
 - [ ] `report_ID1_ID2.pdf` ≤ 12 pages, fully self-contained
