@@ -86,7 +86,11 @@ SHAPING: dict[str, dict[str, Any]] = {
     "door_heavy": {
         "door_open": 25.0,
         "key_pickup": 3.0,
-        "enter_right_room": 8.0,
+        "enter_right_room": 8.0,  # first time only
+        "leave_right_room": 8.0,  # every backtrack to left
+        "key_drop": 10.0,  # first drop in right room (free hand for water)
+        "key_drop_locked_left": 8.0,  # drop in left before door open
+        "lava_extinguish": 20.0,  # per lava tile (push ferrying water)
     },
     "door_extreme": {
         "door_open": 40.0,

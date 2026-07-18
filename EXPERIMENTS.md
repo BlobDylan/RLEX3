@@ -167,7 +167,11 @@ Plots and figures live in [`graphs/`](graphs/).
   | **tile=16** | `tile16_arch1` | `tile16_arch2` |
 - **Runner:** `scripts/ab_tile16.py` → `graphs/ab_tile_arch/`
 - **Note:** CNN input stays `64×64`; tile=16 only changes render resolution *before* crop/inset/resize (sharper nearest downsample).
-- **Monitor:** `tail -f graphs/ab_tile_arch/run.log` · `LEADERBOARD.md`
+- **Partial results:** `tile12_arch2` best late door (56%) vs arch1 (38%); same eval_door 27%. `tile16_arch1` weak (eval_door 7%). `tile16_arch2` mid-run looked strong (door~70% @100k) but unfinished.
+- **Notebook lock (user):** `tile_size=12`, **no `TileInsetWrapper`**, `frequent_updates` + `door_heavy`. Overnight removed from notebook.
+- **Arch sweep (6c):** DQN now supports `width_mult` / `n_extra_conv` / `fc_mult`. Notebook `_ARCH_SWEEP` = w2 (~1.9M), w3 (~4.2M), w4 (~7.4M), w3_deep, w3_widehead → `graphs/complex_arch_sweep_dqn/` via `RUN["complex_train"]`.
+- **Rainbow DQN:** `algorithms/rainbow.py` — Double + Dueling + NoisyNets + n-step(3) + PER + C51(51). Notebook: `_USE_RAINBOW=True` → `graphs/complex_arch_sweep_rainbow/` with `rb_w1` only.
+- **Leave-right / key-drop (6d):** `leave_right_room` −every backtrack; `enter_right_room` +first entry; `key_drop` +first drop **in right room**; `key_drop_locked_left` −every drop in left while door locked. `door_heavy`: enter/leave ±8, key_drop +10, key_drop_locked_left −8.
 
 ## Experiment 11: Colab CUDA long run (~132k) — stuck at door
 

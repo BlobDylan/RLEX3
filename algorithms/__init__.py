@@ -3,6 +3,7 @@
 from .base import BaseAlgorithm
 from .device import describe_device, get_torch_device, seed_everything
 from .dqn import DQN
+from .rainbow import RainbowDQN
 from .hparam_search import (
     DQNSearchSpace,
     format_search_leaderboard,
@@ -21,6 +22,7 @@ from .plotting import (
 __all__ = [
     "BaseAlgorithm",
     "DQN",
+    "RainbowDQN",
     "DQNSearchSpace",
     "describe_device",
     "format_search_leaderboard",

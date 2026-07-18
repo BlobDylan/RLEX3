@@ -82,7 +82,9 @@ class ReplayBuffer:
 class QNetwork(nn.Module):
     """CNN for MiniGrid frames (HWC or CHW). Gentler than Nature-Atari strides.
 
-    ``width_mult`` scales conv/head width (1 = original ~0.47M params; 2 ≈ 4× params).
+    ``width_mult`` scales conv/head channels (1 ≈ 0.47M params; params ~ width²).
+    ``n_extra_conv`` adds that many extra 3×3 stride-1 layers at the top width.
+    ``fc_mult`` scales only the MLP head width (on top of ``width_mult``).
     """
 
     def __init__(
@@ -91,29 +93,41 @@ class QNetwork(nn.Module):
         n_actions: int,
         *,
         width_mult: int = 1,
+        n_extra_conv: int = 0,
+        fc_mult: int = 1,
     ) -> None:
         super().__init__()
         self.obs_shape = tuple(obs_shape)
         self.width_mult = max(1, int(width_mult))
+        self.n_extra_conv = max(0, int(n_extra_conv))
+        self.fc_mult = max(1, int(fc_mult))
         self.channels_last = self._is_channels_last(obs_shape)
         c = obs_shape[-1] if self.channels_last else obs_shape[0]
 
         w = self.width_mult
         c1, c2, c3 = 32 * w, 64 * w, 64 * w
-        hdim = 256 * w
+        hdim = 256 * w * self.fc_mult
 
         # Strided convs; then bilinear resize to a fixed map (MPS-safe).
         # AdaptiveAvgPool2d(H_out) on MPS requires H % H_out == 0 — fails on
         # cropped 32×32 → … → 8×8 pooled to 5×5. Interpolate avoids that and
         # keeps a spatial feature map (unlike global pool).
-        self.features = nn.Sequential(
+        feat_layers: list[nn.Module] = [
             nn.Conv2d(c, c1, kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
             nn.Conv2d(c1, c2, kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
             nn.Conv2d(c2, c3, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-        )
+        ]
+        for _ in range(self.n_extra_conv):
+            feat_layers.extend(
+                [
+                    nn.Conv2d(c3, c3, kernel_size=3, stride=1, padding=1),
+                    nn.ReLU(),
+                ]
+            )
+        self.features = nn.Sequential(*feat_layers)
         self.feat_hw = (5, 5)
         self.head = nn.Sequential(
             nn.Flatten(),
@@ -166,6 +180,8 @@ class DQN(BaseAlgorithm):
         eps_decay_steps: int = 50_000,
         log_loss_every: int = 50,
         width_mult: int = 1,
+        n_extra_conv: int = 0,
+        fc_mult: int = 1,
     ) -> None:
         super().__init__(obs_shape, n_actions, device=device, seed=seed)
 
@@ -183,13 +199,16 @@ class DQN(BaseAlgorithm):
         # loss.item() forces a device sync — only do it every N updates.
         self.log_loss_every = max(0, int(log_loss_every))
         self.width_mult = max(1, int(width_mult))
+        self.n_extra_conv = max(0, int(n_extra_conv))
+        self.fc_mult = max(1, int(fc_mult))
 
-        self.q_net = QNetwork(
-            obs_shape, n_actions, width_mult=self.width_mult
-        ).to(self.device)
-        self.target_net = QNetwork(
-            obs_shape, n_actions, width_mult=self.width_mult
-        ).to(self.device)
+        _arch = dict(
+            width_mult=self.width_mult,
+            n_extra_conv=self.n_extra_conv,
+            fc_mult=self.fc_mult,
+        )
+        self.q_net = QNetwork(obs_shape, n_actions, **_arch).to(self.device)
+        self.target_net = QNetwork(obs_shape, n_actions, **_arch).to(self.device)
         self.target_net.load_state_dict(self.q_net.state_dict())
         self.target_net.eval()
 
@@ -197,6 +216,9 @@ class DQN(BaseAlgorithm):
         self.buffer = ReplayBuffer(buffer_size, obs_shape)
 
         self._updates = 0
+
+    def n_parameters(self) -> int:
+        return sum(p.numel() for p in self.q_net.parameters())
 
     # ------------------------------------------------------------------
     # Action selection
@@ -353,26 +375,44 @@ class DQN(BaseAlgorithm):
         env_fn: Callable[[], Any],
         *,
         total_timesteps: int,
-        log_every: int = 1_000,
+        log_every: int | None = None,
+        log_every_episodes: int | None = None,
         n_envs: int = 1,
         **kwargs: Any,
     ) -> dict[str, list[float]]:
         """Interact with ``env_fn()``, store transitions, and update Q.
 
         Args:
+            log_every_episodes: Print a progress line every N finished episodes
+                (default **10**).
+            log_every: Legacy alias. If ``log_every_episodes`` is omitted and
+                ``log_every >= 50``, uses ``log_every // 50`` episodes; if
+                ``log_every < 50``, treats it as an episode interval.
             n_envs: If >1, run ``SyncVectorEnv`` with batched action selection
                 (much better GPU amortization). Episode metrics are still logged
                 per finished sub-env episode.
         """
+        if log_every_episodes is None:
+            if log_every is None:
+                log_every_episodes = 10
+            elif int(log_every) >= 50:
+                log_every_episodes = max(1, int(log_every) // 50)
+            else:
+                log_every_episodes = max(1, int(log_every))
+        else:
+            log_every_episodes = max(1, int(log_every_episodes))
+
         n_envs = max(1, int(n_envs))
         if n_envs == 1:
             return self._train_single(
-                env_fn, total_timesteps=total_timesteps, log_every=log_every
+                env_fn,
+                total_timesteps=total_timesteps,
+                log_every_episodes=log_every_episodes,
             )
         return self._train_vectorized(
             env_fn,
             total_timesteps=total_timesteps,
-            log_every=log_every,
+            log_every_episodes=log_every_episodes,
             n_envs=n_envs,
         )
 
@@ -415,7 +455,7 @@ class DQN(BaseAlgorithm):
         env_fn: Callable[[], Any],
         *,
         total_timesteps: int,
-        log_every: int,
+        log_every_episodes: int,
     ) -> dict[str, list[float]]:
         env = env_fn()
         history = self._empty_history()
@@ -454,7 +494,7 @@ class DQN(BaseAlgorithm):
                     success,
                     info,
                     saw_stages,
-                    log_every,
+                    log_every_episodes,
                 )
                 obs, info = env.reset()
                 ep_return = 0.0
@@ -468,7 +508,7 @@ class DQN(BaseAlgorithm):
         env_fn: Callable[[], Any],
         *,
         total_timesteps: int,
-        log_every: int,
+        log_every_episodes: int,
         n_envs: int,
     ) -> dict[str, list[float]]:
         import gymnasium as gym
@@ -531,7 +571,7 @@ class DQN(BaseAlgorithm):
                         success,
                         info_i,
                         saw_stages,
-                        log_every,
+                        log_every_episodes,
                     )
                     ep_returns[i] = 0.0
                     ep_lens[i] = 0
@@ -598,7 +638,7 @@ class DQN(BaseAlgorithm):
         success: float,
         info: dict,
         saw_stages: bool,
-        log_every: int,
+        log_every_episodes: int,
     ) -> bool:
         recent_returns.append(ep_return)
         recent_success.append(success)
@@ -615,7 +655,7 @@ class DQN(BaseAlgorithm):
             history[sk].append(val)
             recent_stages[sk].append(val)
 
-        if log_every and self.total_episodes % max(1, log_every // 50) == 0:
+        if log_every_episodes and self.total_episodes % max(1, log_every_episodes) == 0:
             mean_r = float(np.mean(recent_returns)) if recent_returns else 0.0
             succ20 = float(np.mean(recent_success)) if recent_success else 0.0
             line = (
@@ -662,6 +702,8 @@ class DQN(BaseAlgorithm):
                 "n_actions": self.n_actions,
                 "double_dqn": self.double_dqn,
                 "width_mult": self.width_mult,
+                "n_extra_conv": self.n_extra_conv,
+                "fc_mult": self.fc_mult,
             },
             path,
         )
@@ -676,3 +718,16 @@ class DQN(BaseAlgorithm):
         self._updates = int(ckpt.get("updates", 0))
         if "width_mult" in ckpt:
             self.width_mult = int(ckpt["width_mult"])
+        if "n_extra_conv" in ckpt:
+            self.n_extra_conv = int(ckpt["n_extra_conv"])
+        if "fc_mult" in ckpt:
+            self.fc_mult = int(ckpt["fc_mult"])
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"obs_shape={self.obs_shape}, n_actions={self.n_actions}, "
+            f"device={self.device}, width_mult={self.width_mult}, "
+            f"n_extra_conv={self.n_extra_conv}, fc_mult={self.fc_mult}, "
+            f"params={self.n_parameters():,})"
+        )

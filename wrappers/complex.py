@@ -16,8 +16,11 @@ DEFAULT_COMPLEX_SHAPING: dict[str, float] = {
     "key_pickup": 5.0,  # first time only (anti pick/drop farm)
     "door_open": 10.0,  # first time only
     "enter_right_room": 5.0,  # first time only
+    "leave_right_room": 5.0,  # every return to left (discourage backtracking)
+    "key_drop": 5.0,  # first drop in right room (free hand for water)
+    "key_drop_locked_left": 5.0,  # every drop in left while door still locked
     "water_pickup": 2.0,  # once per *original* water tile (not drop/re-pick)
-    "lava_extinguish": 5.0,  # per tile (env removes tile — not repeatable)
+    "lava_extinguish": 10.0,  # per tile (env removes tile — not repeatable)
     "lava_death": 10.0,  # subtracted on lethal lava (terminated, not success)
 }
 
@@ -26,7 +29,11 @@ class ComplexShapingWrapper(gym.Wrapper):
     """Scale the sparse goal reward and add legal **first-time** event bonuses.
 
     Anti-reward-hacking:
-      - key / door / enter-right: paid at most once per episode (latched).
+      - key / door / enter-right / key-drop: paid at most once per episode (latched).
+      - key-drop bonus only in the **right room** (need free hand for water).
+      - key-drop in left while door locked: penalized **every** time.
+      - leave-right: penalized **every** time the agent crosses back to the left
+        (enter bonus stays first-time only).
       - water: paid once per **original spawn tile**. Dropping and re-picking the
         same ball (or picking from a drop cell) does not pay again.
       - lava extinguish: env deletes the tile, so it cannot be farmed.
@@ -46,10 +53,14 @@ class ComplexShapingWrapper(gym.Wrapper):
         key_pickup: float = DEFAULT_COMPLEX_SHAPING["key_pickup"],
         door_open: float = DEFAULT_COMPLEX_SHAPING["door_open"],
         enter_right_room: float = DEFAULT_COMPLEX_SHAPING["enter_right_room"],
+        leave_right_room: float = DEFAULT_COMPLEX_SHAPING["leave_right_room"],
+        key_drop: float = DEFAULT_COMPLEX_SHAPING["key_drop"],
+        key_drop_locked_left: float = DEFAULT_COMPLEX_SHAPING["key_drop_locked_left"],
         water_pickup: float = DEFAULT_COMPLEX_SHAPING["water_pickup"],
         lava_extinguish: float = DEFAULT_COMPLEX_SHAPING["lava_extinguish"],
         lava_death: float = DEFAULT_COMPLEX_SHAPING["lava_death"],
         use_enter_right_room: bool = True,
+        use_leave_right_room: bool = True,
     ) -> None:
         super().__init__(env)
         self.goal_scale = float(goal_scale)
@@ -57,10 +68,14 @@ class ComplexShapingWrapper(gym.Wrapper):
         self.key_pickup = float(key_pickup)
         self.door_open = float(door_open)
         self.enter_right_room = float(enter_right_room)
+        self.leave_right_room = float(leave_right_room)
+        self.key_drop = float(key_drop)
+        self.key_drop_locked_left = float(key_drop_locked_left)
         self.water_pickup = float(water_pickup)
         self.lava_extinguish = float(lava_extinguish)
         self.lava_death = float(lava_death)
         self.use_enter_right_room = bool(use_enter_right_room)
+        self.use_leave_right_room = bool(use_leave_right_room)
         self._reset_latches()
 
     def _reset_latches(self) -> None:
@@ -74,6 +89,7 @@ class ComplexShapingWrapper(gym.Wrapper):
         self._paid_key = False
         self._paid_door = False
         self._paid_right = False
+        self._paid_key_drop = False
         # Original water spawn cells still eligible for a pickup bonus.
         self._awardable_water: set[tuple[int, int]] = set()
 
@@ -135,6 +151,40 @@ class ComplexShapingWrapper(gym.Wrapper):
                 self._paid_right = True
         elif core.is_in_right_room():
             self._stage_right = True
+        elif (
+            self.use_leave_right_room
+            and self.leave_right_room != 0.0
+            and core.prev_in_right_room()
+            and not core.is_in_right_room()
+        ):
+            # Crossed back through the door to the left — every time (not latched).
+            shaped -= self.leave_right_room
+            breakdown["leave_right_room"] = -self.leave_right_room
+
+        just_dropped_key = (
+            self._paid_key
+            and core.prev_carrying_key()
+            and not core.is_carrying_key()
+        )
+        # First drop of the key *in the right room* (hands free → can pick water).
+        if (
+            just_dropped_key
+            and not self._paid_key_drop
+            and self.key_drop != 0.0
+            and core.is_in_right_room()
+        ):
+            shaped += self.key_drop
+            breakdown["key_drop"] = self.key_drop
+            self._paid_key_drop = True
+        elif (
+            just_dropped_key
+            and self.key_drop_locked_left != 0.0
+            and not core.is_in_right_room()
+            and not core.is_door_open()
+        ):
+            # Dropped key in left room before unlocking — every time.
+            shaped -= self.key_drop_locked_left
+            breakdown["key_drop_locked_left"] = -self.key_drop_locked_left
 
         if core.is_carrying_water() and not core.prev_carrying_water():
             waters_after = {(int(x), int(y)) for x, y in core.water_positions()}
@@ -202,15 +252,20 @@ class ComplexShapingWrapper(gym.Wrapper):
             "key_pickup": self.key_pickup,
             "door_open": self.door_open,
             "enter_right_room": self.enter_right_room,
+            "leave_right_room": self.leave_right_room,
+            "key_drop": self.key_drop,
+            "key_drop_locked_left": self.key_drop_locked_left,
             "water_pickup": self.water_pickup,
             "lava_extinguish": self.lava_extinguish,
             "lava_death": self.lava_death,
             "use_enter_right_room": self.use_enter_right_room,
-            "anti_farm": "first-time milestones; water once per original spawn tile",
+            "use_leave_right_room": self.use_leave_right_room,
+            "anti_farm": "first-time milestones; key-drop once in right; key-drop locked-left every; water once per spawn; leave-right every",
             "max_stage_shaping_est": (
                 self.key_pickup
                 + self.door_open
                 + (self.enter_right_room if self.use_enter_right_room else 0.0)
+                + self.key_drop
                 + self.water_pickup * 3.0  # default n_water
                 + self.lava_extinguish * 3.0  # lava ring size
             ),
