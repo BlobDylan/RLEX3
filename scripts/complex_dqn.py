@@ -69,6 +69,11 @@ SHAPING: dict[str, float] = {
     "lava_death": 8.0,         # softened (was 15): the lava sits in the right room the
     # agent must now work inside; a big death penalty made it timid exactly where it
     # needs to toggle water onto lava. Still worse than a timeout, so no suicide bias.
+    "lava_death_with_water": 0.0,  # EXPERIMENT: dying to lava WHILE carrying water is NOT
+    # punished — remove the fear that keeps the agent out of the lava region so random
+    # exploration there can accidentally toggle-extinguish (the rare event we need). Risk:
+    # "grab water then die" can become a camp (~+65 banked); watch whether return rises via
+    # deaths (succ stays 0, lava stays 0) vs genuine extinguishes (lava/goal climb).
 }
 
 

@@ -59,6 +59,7 @@ class ComplexShapingWrapper(gym.Wrapper):
         water_pickup: float = DEFAULT_COMPLEX_SHAPING["water_pickup"],
         lava_extinguish: float = DEFAULT_COMPLEX_SHAPING["lava_extinguish"],
         lava_death: float = DEFAULT_COMPLEX_SHAPING["lava_death"],
+        lava_death_with_water: float | None = None,
         use_enter_right_room: bool = True,
         use_leave_right_room: bool = True,
     ) -> None:
@@ -74,6 +75,13 @@ class ComplexShapingWrapper(gym.Wrapper):
         self.water_pickup = float(water_pickup)
         self.lava_extinguish = float(lava_extinguish)
         self.lava_death = float(lava_death)
+        # If set, use a DIFFERENT (typically smaller) death penalty when the agent dies
+        # to lava while carrying water — remove the fear that keeps it out of the lava
+        # region so exploration there can stumble onto the toggle-extinguish. ``None``
+        # keeps a single ``lava_death`` for all deaths (original behaviour).
+        self.lava_death_with_water = (
+            None if lava_death_with_water is None else float(lava_death_with_water)
+        )
         self.use_enter_right_room = bool(use_enter_right_room)
         self.use_leave_right_room = bool(use_leave_right_room)
         self._reset_latches()
@@ -207,8 +215,16 @@ class ComplexShapingWrapper(gym.Wrapper):
             self._stage_lava = True
 
         if terminated and not core.is_on_goal():
-            shaped -= self.lava_death
-            breakdown["lava_death"] = -self.lava_death
+            # Contextual death penalty: dying with water in hand can be treated as less
+            # bad (or free) to stop lava-fear from suppressing exploration in the lava
+            # region. Water persists through a lethal step (only ``toggle`` consumes it).
+            carrying_water = core.is_carrying_water() or core.prev_carrying_water()
+            penalty = self.lava_death
+            if carrying_water and self.lava_death_with_water is not None:
+                penalty = self.lava_death_with_water
+            if penalty != 0.0:
+                shaped -= penalty
+                breakdown["lava_death"] = -penalty
 
         if terminated and core.is_on_goal():
             self._stage_goal = True
