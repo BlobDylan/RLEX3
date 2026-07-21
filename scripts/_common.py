@@ -21,7 +21,7 @@ from pipelines import make_complex_env, make_simple_env
 from utils import grid_rollout_video, plot_training_history, save_training_history
 
 # Single source of truth for the tuned ComplexEnv reward shaping.
-from scripts.complex_dqn import SHAPING as COMPLEX_SHAPING
+from scripts.train_dqn_complex import SHAPING as COMPLEX_SHAPING
 
 ROOT = Path(__file__).resolve().parents[1]
 

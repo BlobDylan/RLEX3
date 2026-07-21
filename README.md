@@ -65,23 +65,47 @@ chain:
   screen); grayscale / frame-stacking both hurt.
 
 ```bash
-.venv/bin/python -u scripts/complex_dqn.py                     # defaults (300k steps)
-.venv/bin/python -u scripts/complex_dqn.py --steps 400000 --device mps
-.venv/bin/python -u scripts/complex_dqn.py --help             # all knobs
+.venv/bin/python -u scripts/train_dqn_complex.py                 # defaults
+.venv/bin/python -u scripts/train_dqn_complex.py --steps 400000 --device mps
+.venv/bin/python -u scripts/train_dqn_complex.py --resume output/complex_dqn/<ts> --steps 6000000
+.venv/bin/python -u scripts/train_dqn_complex.py --help          # all knobs
 ```
 
-Outputs land in `graphs/complex_dqn/<timestamp>/`:
-`history.json`, training-curve PNGs, `agent.pt`, and `result.json` (config + eval).
+Outputs land in `output/complex_dqn/<timestamp>/` (gitignored):
+`history.json`, training-curve PNGs, `agent.pt`, `result.json`, and `videos/`.
 
 Key flags: `--steps`, `--max-steps`, `--reward-scale`, `--rnd-coef`, `--n-step`,
 `--gamma`, `--lr`, `--eps-end`, `--eps-decay-steps`, `--train-freq`, `--width-mult`,
-`--n-extra-conv`, `--seed`, `--device`, `--out`.
+`--n-extra-conv`, `--resume`, `--seed`, `--device`, `--out`.
 
-### Other runners
+### The six training scripts
+
+One entry point per algorithm × env, all consistent (`train_<algo>_<env>.py`):
 
 ```bash
-.venv/bin/python -u scripts/overnight_complex.py   # curated DQN × shaping sweep + leaderboard
-.venv/bin/python -u scripts/ab_tile16.py           # tile-size / architecture A/B
+scripts/train_dqn_simple.py        scripts/train_dqn_complex.py
+scripts/train_ppo_simple.py        scripts/train_ppo_complex.py
+scripts/train_reinforce_simple.py  scripts/train_reinforce_complex.py
+```
+
+Each takes `--device`, `--steps`, `--seed`, … (`--help` for the full list). Raw outputs go
+to `output/<env>_<algo>/<timestamp>/` (gitignored).
+
+### Exporting report assets
+
+```bash
+.venv/bin/python -u scripts/export_results.py output/complex_dqn/<timestamp>
+```
+
+Copies just the graph images + rollout videos (no weights / history) into the **tracked**
+`results/<run>/{graphs,videos}/` tree for the report.
+
+### Smoke test / archived runners
+
+```bash
+.venv/bin/python -u scripts/smoke_test.py          # tiny run of all 3 algos × both envs
+.venv/bin/python -u archive/overnight_complex.py   # (archived) DQN × shaping sweep
+.venv/bin/python -u archive/ab_tile16.py           # (archived) tile-size / arch A/B
 ```
 
 ## Using the pieces from Python

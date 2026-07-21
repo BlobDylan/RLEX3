@@ -16,9 +16,9 @@ A single **RGB** frame is sufficient (inventory is recoverable from what's missi
 screen); grayscale / frame-stacking both hurt.
 
 Usage:
-  .venv/bin/python -u scripts/complex_dqn.py
-  .venv/bin/python -u scripts/complex_dqn.py --steps 400000 --device mps
-  .venv/bin/python -u scripts/complex_dqn.py --rnd-coef 0.1   # add novelty exploration
+  .venv/bin/python -u scripts/train_dqn_complex.py
+  .venv/bin/python -u scripts/train_dqn_complex.py --steps 400000 --device mps
+  .venv/bin/python -u scripts/train_dqn_complex.py --rnd-coef 0.1   # add novelty exploration
 """
 
 from __future__ import annotations

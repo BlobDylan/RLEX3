@@ -320,12 +320,15 @@ pitfall — the training (stochastic) metric overstates the deployable (greedy) 
 - [x] Run outputs live under `output/` (gitignored). Curated report assets (graph images +
       rollout videos, no weights/history) go into `results/<run>/{graphs,videos}/` — tracked
       — via `scripts/export_results.py <output-run-dir>`.
-- [x] DQN supports **resume**: `scripts/complex_dqn.py --resume <run-dir> --steps <new-total>`
+- [x] DQN supports **resume**: `scripts/train_dqn_complex.py --resume <run-dir> --steps <new-total>`
       reloads weights + counters and continues in place (merged history/plots). Replay buffer
       isn't persisted → ~`learning_starts` warmup on resume.
+- [x] Six consistent train scripts: `scripts/train_<algo>_<simple|complex>.py` (DQN/PPO/
+      REINFORCE × both envs). PPO/REINFORCE/DQN-simple share `scripts/_algo_cli.py` +
+      `scripts/_common.run_training`; `train_dqn_complex.py` keeps its bespoke tuned run.
 - [ ] Remove dormant RND path (`archive/rnd.py` move + drop `rnd_coef` in DQN/script).
 - [ ] Prune old `output/` sweeps (was `graphs/`, ~815 MB) to leaderboards + winners.
-- [ ] Unify DQN trainer: rename `scripts/complex_dqn.py → train_dqn.py`, refactor onto
+- [ ] Unify DQN trainer: fold `scripts/train_dqn_complex.py` onto
       `scripts/_common.run_training` (do after the DQN runs finish).
 
 ---
