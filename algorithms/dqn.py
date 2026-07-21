@@ -366,6 +366,11 @@ class DQN(BaseAlgorithm):
         per_alpha: float = 0.6,
         per_beta0: float = 0.4,
         per_beta_steps: int = 1_000_000,
+        episodic_eps_ramp: bool = False,
+        eps_ramp_segment: int = 25,
+        eps_ramp_greedy_steps: int = 25,
+        eps_ramp_full_steps: int = 100,
+        eps_ramp_floor: float = 0.1,
     ) -> None:
         super().__init__(obs_shape, n_actions, device=device, seed=seed)
 
@@ -380,6 +385,16 @@ class DQN(BaseAlgorithm):
         self.eps_start = eps_start
         self.eps_end = eps_end
         self.eps_decay_steps = eps_decay_steps
+        # Within-episode eps ramp: greedy early (execute the learned door in ~25 steps),
+        # then a STAIRCASE (segments of eps_ramp_segment steps) up to full eps by
+        # eps_ramp_full_steps — concentrating exploration on the unlearned frontier.
+        self.episodic_eps_ramp = bool(episodic_eps_ramp)
+        self.eps_ramp_segment = max(1, int(eps_ramp_segment))
+        self.eps_ramp_greedy_steps = int(eps_ramp_greedy_steps)
+        self.eps_ramp_full_steps = int(eps_ramp_full_steps)
+        # Floor on the ramp multiplier: the early-episode phase is NEAR-greedy, not exactly
+        # greedy, so a deterministic bad trajectory can't lock the agent in (a little noise).
+        self.eps_ramp_floor = float(eps_ramp_floor)
         # loss.item() forces a device sync — only do it every N updates.
         self.log_loss_every = max(0, int(log_loss_every))
         self.width_mult = max(1, int(width_mult))
@@ -435,24 +450,47 @@ class DQN(BaseAlgorithm):
         t = min(1.0, self.total_steps / self.eps_decay_steps)
         return self.eps_start + t * (self.eps_end - self.eps_start)
 
-    def select_action(self, obs: np.ndarray, *, explore: bool = True) -> int:
-        if explore and np.random.rand() < self.epsilon():
+    def _ep_eps_scale(self, ep_lens):
+        """Within-episode eps multiplier in [0, 1], as a STAIRCASE over the episode step:
+        fully greedy (0) for the first ``eps_ramp_greedy_steps`` (execute the learned
+        ~25-step door), then stepping up every ``eps_ramp_segment`` steps to full eps (1)
+        by ``eps_ramp_full_steps``. Thresholds are ABSOLUTE steps (tied to the task's
+        structure: door ~25, optimal solve ~70), not a fraction of the horizon. Works on a
+        scalar or a per-env array; returns None when the ramp is off.
+
+        A floor (``eps_ramp_floor``) keeps the early phase NEAR-greedy rather than exactly
+        greedy. Defaults (seg=25, greedy=25, full=100, floor=0.1) give: steps 0-24 -> 0.10,
+        25-49 -> 0.40, 50-74 -> 0.70, 75+ -> 1.0."""
+        if not self.episodic_eps_ramp:
+            return None
+        seg = self.eps_ramp_segment
+        step_idx = np.floor(np.asarray(ep_lens, dtype=np.float64) / seg)
+        greedy_segs = self.eps_ramp_greedy_steps / seg
+        full_segs = max(greedy_segs + 1.0, self.eps_ramp_full_steps / seg)
+        frac = np.clip((step_idx - greedy_segs + 1.0) / (full_segs - greedy_segs), 0.0, 1.0)
+        return self.eps_ramp_floor + (1.0 - self.eps_ramp_floor) * frac
+
+    def select_action(self, obs: np.ndarray, *, explore: bool = True, eps_scale: float | None = None) -> int:
+        eps = self.epsilon() * (1.0 if eps_scale is None else float(eps_scale))
+        if explore and np.random.rand() < eps:
             return int(np.random.randint(0, self.n_actions))
 
         with torch.no_grad():
             q = self.q_net(self.to_tensor(obs))
             return int(q.argmax(dim=1).item())
 
-    def select_actions(self, obss: np.ndarray, *, explore: bool = True) -> np.ndarray:
+    def select_actions(self, obss: np.ndarray, *, explore: bool = True, eps_scale=None) -> np.ndarray:
         """Batched ε-greedy — one GPU forward for ``n_envs`` observations.
 
-        Args:
-            obss: Array shaped ``(n_envs, *obs_shape)``.
+        ``eps_scale`` (per-env array in [0, 1]) modulates ε within the episode (see
+        ``_ep_eps_scale``): greedy early, exploratory late.
         """
         n = int(obss.shape[0])
         if explore:
-            eps = self.epsilon()
-            rand_mask = np.random.rand(n) < eps
+            eff = np.full(n, self.epsilon(), dtype=np.float64)
+            if eps_scale is not None:
+                eff *= np.asarray(eps_scale, dtype=np.float64)
+            rand_mask = np.random.rand(n) < eff
         else:
             rand_mask = np.zeros(n, dtype=bool)
 
@@ -608,7 +646,7 @@ class DQN(BaseAlgorithm):
         log_every: int | None = None,
         log_every_episodes: int | None = None,
         n_envs: int = 1,
-        callback: Callable[[int], None] | None = None,
+        callback: Callable[[int, dict], None] | None = None,
         **kwargs: Any,
     ) -> dict[str, list[float]]:
         """Interact with ``env_fn()``, store transitions, and update Q.
@@ -689,7 +727,7 @@ class DQN(BaseAlgorithm):
         *,
         total_timesteps: int,
         log_every_episodes: int,
-        callback: Callable[[int], None] | None = None,
+        callback: Callable[[int, dict], None] | None = None,
     ) -> dict[str, list[float]]:
         env = env_fn()
         history = self._empty_history()
@@ -705,7 +743,10 @@ class DQN(BaseAlgorithm):
         saw_stages = False
 
         while self.total_steps < total_timesteps:
-            action = self.select_action(obs, explore=True)
+            _scale = self._ep_eps_scale(ep_len)
+            action = self.select_action(
+                obs, explore=True, eps_scale=None if _scale is None else float(_scale)
+            )
             next_obs, reward, terminated, truncated, info = env.step(action)
             episode_done = bool(terminated or truncated)
             success = self._success_from_info(info, terminated)
@@ -721,7 +762,7 @@ class DQN(BaseAlgorithm):
             self.total_steps += 1
             self._maybe_learn(history)
             if callback is not None:
-                callback(self.total_steps)
+                callback(self.total_steps, history)
 
             if episode_done:
                 for tr in nstep.flush():
@@ -753,7 +794,7 @@ class DQN(BaseAlgorithm):
         total_timesteps: int,
         log_every_episodes: int,
         n_envs: int,
-        callback: Callable[[int], None] | None = None,
+        callback: Callable[[int, dict], None] | None = None,
     ) -> dict[str, list[float]]:
         import gymnasium as gym
 
@@ -774,7 +815,9 @@ class DQN(BaseAlgorithm):
         steps_since_update = 0
 
         while self.total_steps < total_timesteps:
-            actions = self.select_actions(obss, explore=True)
+            actions = self.select_actions(
+                obss, explore=True, eps_scale=self._ep_eps_scale(ep_lens)
+            )
             next_obss, rewards, terminateds, truncateds, infos = envs.step(actions)
             dones = np.logical_or(terminateds, truncateds)
             intrinsic = self.rnd.intrinsic(next_obss) if self.rnd is not None else None
@@ -831,7 +874,7 @@ class DQN(BaseAlgorithm):
             )
             obss = next_obss
             if callback is not None:
-                callback(self.total_steps)
+                callback(self.total_steps, history)
 
         envs.close()
         return history

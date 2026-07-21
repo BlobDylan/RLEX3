@@ -9,14 +9,17 @@ Living checklist for the final project. Update the **Current step** marker as we
 > **Step 6c done / 6d in progress — ComplexEnv from-scratch DQN**
 >
 > Pure from-scratch Double-DQN on ComplexEnv (single `(64,64,3)` RGB frame,
-> monotonic pull-forward shaping, n-step, `n_envs=8`, `width_mult=2`, MPS). Runs +
-> graphs + periodic rollout videos captured. Bottleneck isolated to the
-> **water→lava→goal ferry** plus a **greedy-vs-exploratory gap** (permanent ε floor
-> left the greedy policy trap-bound).
+> monotonic pull-forward shaping, n-step, `n_envs=8`, `width_mult=2`, MPS, scale-robust
+> prioritized replay, within-episode ε-ramp, grid rollout videos).
 >
-> **Next:** (A) low-ε anneal (→0.05 / 700k) + 900k budget alone to fix the greedy
-> traps; then (A)+**scale-robust prioritized replay** (max-tree) to consolidate the
-> ferry. Full run-by-run log in **Step 6d** below.
+> **First nonzero greedy result achieved: ~10% success (15% @ ε=0.05) on the full
+> key→door→water→lava→goal chain** (run `160743`). The **low-ε consolidation tail** was
+> the key (fixes the greedy-vs-exploratory gap); the remaining ceiling is the
+> **multiplicative funnel** (each stage roughly halves the reach-rate).
+>
+> **Next:** “best config” run staged — reward-dominance on lava/goal, `n_step=8`, and a
+> **2M-step budget with a 1M low-ε tail** (5× the tail that produced 10%). Then pivot to
+> PPO (Step 8), the more promising tool for this task. Full log in **Step 6d** below.
 
 ---
 
@@ -206,14 +209,19 @@ key→door→right→water; ferry (lava/goal) is the open frontier. ✓
 
 **Experiment journey (ComplexEnv, from-scratch Double-DQN):**
 
-| Run      | Change                                                                             | Result                                                                                                                                           |
-| -------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Base     | single RGB frame, event shaping, `reward_scale`, n-step, Double-DQN, MPS           | key/door learned; door→right stalled                                                                                                             |
-| Capacity | `width_mult` 1→2 (0.5M→2M params) + `n_envs=8`                                     | **cracked door→right** — a capacity+exploration wall, not shaping                                                                                |
-| N+1      | pull-forward rewards (water 20, lava 25, goal 120, key_drop 15); `feat_hw` 5×5→8×8 | water 55–80%; first goal touches; camping recurred **post-water** (~+50 plateau)                                                                 |
-| N+2      | ε-floor 0.20 / decay 400k; `max_steps` 300→200; `n_step` 3→5; 600k                 | training `succ20` spiked to 25% in the tail — but **final greedy eval = 0%** (key 72, water 4, lava/goal 0)                                      |
-| diag     | fixed-ε sweep on the N+2 model                                                     | greedy ≪ exploratory: early chain **trap-bound** (tiny ε fixes key 72→92); **ferry ~0% at every ε** (never learned)                              |
-| N+3      | (A) ε→0.05 / 700k anneal + 900k; (B) prioritized replay                            | A+B **regressed** (PER + aggressive `reward_scale` → recency-biased replay). Split: run A alone; PER **fixed** with a scale-robust **max-tree**. |
+| Run          | Change                                                                                                                                   | Result                                                                                                                                                                  |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Base         | single RGB frame, event shaping, `reward_scale`, n-step, Double-DQN, MPS                                                                 | key/door learned; door→right stalled                                                                                                                                    |
+| Capacity     | `width_mult` 1→2 (0.5M→2M params) + `n_envs=8`                                                                                           | **cracked door→right** — a capacity+exploration wall, not shaping                                                                                                       |
+| N+1          | pull-forward rewards (water 20, lava 25, goal 120, key_drop 15); `feat_hw` 5×5→8×8                                                       | water 55–80%; first goal touches; camping recurred **post-water** (~+50 plateau)                                                                                        |
+| N+2          | ε-floor 0.20 / decay 400k; `max_steps` 300→200; `n_step` 3→5; 600k                                                                       | training `succ20` spiked to 25% in the tail — but **final greedy eval = 0%** (key 72, water 4, lava/goal 0)                                                             |
+| diag         | fixed-ε sweep on the N+2 model                                                                                                           | greedy ≪ exploratory: early chain **trap-bound** (tiny ε fixes key 72→92); **ferry ~0% at every ε** (never learned)                                                     |
+| N+3          | (A) ε→0.05 / 700k anneal + 900k; (B) prioritized replay                                                                                  | A+B **regressed** (PER + aggressive `reward_scale` → recency-biased replay). Split: run A alone; PER **fixed** with a scale-robust **max-tree**.                        |
+| tooling      | max-tree PER; within-episode **ε-ramp** (greedy early / explore late); escalating **stall penalty**; `lava_death=0`; grid rollout videos | stall penalty **backfired** (n-step smeared it onto good pre-stall actions, never stopped the greedy camp) → removed; ε-ramp + `lava_death=0` kept                      |
+| **`160743`** | ε→0.05 with a **~200k low-ε tail**, per-bucket water, ε-ramp, PER, 900k                                                                  | **FIRST nonzero greedy eval: 10%** (key92 door86 right76 water26 lava14 goal10). The **low-ε tail** consolidated the greedy policy                                      |
+| ε-sweep      | fixed-ε eval on the `160743` model                                                                                                       | greedy **11%**, **15% @ ε=0.05** (best), 14% @ 0.10, 9% @ 0.15. Greedy **no longer trap-bound** (key 91%); ceiling is now the **funnel**                                |
+| regression   | added `water_pickup_once` (reward only the 1st of 3 buckets)                                                                             | **ferry → 0%**: per-bucket roaming was **load-bearing exploration** (collecting balls near lava is how the toggle-extinguish is discovered). **Reverted** to per-bucket |
+| best-config  | per-bucket water 20; lava 25→50; goal 120→300; `n_step` 5→8; **2M steps / 1M-decay / 1M tail**                                           | staged — reward-dominance where propagation matters + 5× the tail that produced 10%                                                                                     |
 
 **Key structural findings (for the report):**
 
@@ -223,12 +231,31 @@ key→door→right→water; ferry (lava/goal) is the open frontier. ✓
 - **The water→lava→goal ferry is a rare-event learning wall** — reachable under
   exploration but never consolidated into the greedy policy; current lever is
   scale-robust prioritized replay (up-sample the rare high-TD ferry transitions).
+- **The low-ε consolidation tail is what fixes the greedy-vs-exploratory gap.** Runs that
+  annealed ε to 0.05 and then trained ~200k more _at that floor_ produced the **first nonzero
+  greedy eval (10%)**; runs with a permanent 0.20 floor stayed at **0% greedy**. Post-tail the
+  greedy policy is no longer trap-bound (key **91%** greedy vs **72%** before the tail).
+- **Deployable performance ≈ 15% @ ε=0.05** — a small ε beats pure-greedy (11%); ε≥0.15 hurts.
+- **The remaining ceiling is a multiplicative funnel, not traps.** Greedy cascade
+  `right 70% → water 28% → lava 13% → goal 11%`, each stage ~halving. Reward density collapses
+  toward the tail, so per-stage policy quality compounds into a low end-to-end rate.
+- **“Hoard-as-exploration” (subtle):** rewarding **each** of the 3 water balls keeps the agent
+  **roaming the lava corner with water in hand**, which is _how the rare toggle-extinguish gets
+  discovered_. A “cleaner” first-bucket-only reward **removed that roaming and the ferry regressed
+  to 0%** — a confound that was secretly load-bearing. (Kept per-bucket; capped water at 20 so a
+  50-point extinguish still beats collecting another bucket.)
+- **The escalating anti-camp (stall) penalty backfired:** with n-step it smeared onto the
+  preceding (often necessary) actions — e.g. teaching “dropping the key is bad” — and never stopped
+  the greedy camp. Replaced by the **within-episode ε-ramp** (near-greedy through the ~25-step door,
+  ramping to full exploration over the unlearned frontier).
 
 - [x] Retune shaping magnitudes / step penalty / `max_steps` (pull-forward staircase; timeout == death, no suicide)
 - [x] Obs / arch tweaks (single RGB confirmed; `feat_hw` grid-aligned 8×8; 2M–4.6M params)
-- [x] Exploration schedule (sustained ε for discovery; low-ε anneal for greedy consolidation)
+- [x] Exploration schedule (sustained ε for discovery; low-ε anneal for greedy consolidation; within-episode ε-ramp)
 - [x] Prioritized replay (scale-robust max-tree) to up-sample rare ferry transitions
-- [ ] Land a >0% **greedy** eval on the full chain, or write up the justified partial (key→door→right→water)
+- [x] Grid rollout videos (N episodes tiled, simultaneous playback) for readable behaviour snapshots
+- [x] Land a >0% **greedy** eval on the full chain — **achieved: ~10% greedy / 15% @ ε=0.05** (run `160743`)
+- [ ] Push past 10% with the “best config” (reward-dominance + 1M low-ε tail) **or** write up the justified partial + pivot to PPO
 
 **Exit:** better stage progress **or** a justified partial-success write-up.
 

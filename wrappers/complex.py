@@ -57,9 +57,12 @@ class ComplexShapingWrapper(gym.Wrapper):
         key_drop: float = DEFAULT_COMPLEX_SHAPING["key_drop"],
         key_drop_locked_left: float = DEFAULT_COMPLEX_SHAPING["key_drop_locked_left"],
         water_pickup: float = DEFAULT_COMPLEX_SHAPING["water_pickup"],
+        water_pickup_once: bool = True,
         lava_extinguish: float = DEFAULT_COMPLEX_SHAPING["lava_extinguish"],
         lava_death: float = DEFAULT_COMPLEX_SHAPING["lava_death"],
         lava_death_with_water: float | None = None,
+        stall_grace: int = 8,
+        stall_penalty: float = 0.0,
         use_enter_right_room: bool = True,
         use_leave_right_room: bool = True,
     ) -> None:
@@ -73,6 +76,7 @@ class ComplexShapingWrapper(gym.Wrapper):
         self.key_drop = float(key_drop)
         self.key_drop_locked_left = float(key_drop_locked_left)
         self.water_pickup = float(water_pickup)
+        self.water_pickup_once = bool(water_pickup_once)
         self.lava_extinguish = float(lava_extinguish)
         self.lava_death = float(lava_death)
         # If set, use a DIFFERENT (typically smaller) death penalty when the agent dies
@@ -82,6 +86,10 @@ class ComplexShapingWrapper(gym.Wrapper):
         self.lava_death_with_water = (
             None if lava_death_with_water is None else float(lava_death_with_water)
         )
+        # Anti-camp: once the agent's (x,y) has been unchanged for >= stall_grace steps,
+        # add an ESCALATING penalty each further stationary step until it moves (0 = off).
+        self.stall_grace = int(stall_grace)
+        self.stall_penalty = float(stall_penalty)
         self.use_enter_right_room = bool(use_enter_right_room)
         self.use_leave_right_room = bool(use_leave_right_room)
         self._reset_latches()
@@ -98,8 +106,12 @@ class ComplexShapingWrapper(gym.Wrapper):
         self._paid_door = False
         self._paid_right = False
         self._paid_key_drop = False
+        self._paid_water = False
         # Original water spawn cells still eligible for a pickup bonus.
         self._awardable_water: set[tuple[int, int]] = set()
+        # Anti-camp position tracking.
+        self._last_pos: tuple[int, int] | None = None
+        self._stationary_steps = 0
 
     def reset(self, **kwargs: Any):
         self._reset_latches()
@@ -129,6 +141,23 @@ class ComplexShapingWrapper(gym.Wrapper):
 
         shaped -= self.step_penalty
         breakdown["step_penalty"] = -self.step_penalty
+
+        # Escalating anti-camp penalty: if the agent's (x,y) has not changed for
+        # >= stall_grace steps, subtract a penalty that grows each further stationary
+        # step (ramped over ~10 steps, then held) until it moves. Turning in place counts
+        # as stationary (position unchanged), so idle-spinning is punished too.
+        if self.stall_penalty > 0.0:
+            pos = (int(core.agent_pos[0]), int(core.agent_pos[1]))
+            if self._last_pos is not None and pos == self._last_pos:
+                self._stationary_steps += 1
+            else:
+                self._stationary_steps = 0
+            self._last_pos = pos
+            over = min(self._stationary_steps - self.stall_grace + 1, 10)
+            if over > 0:
+                stall = self.stall_penalty * float(over)
+                shaped -= stall
+                breakdown["stall_penalty"] = -stall
 
         # --- first-time / per-original-tile events ---
         if (
@@ -190,16 +219,23 @@ class ComplexShapingWrapper(gym.Wrapper):
         if core.is_carrying_water() and not core.prev_carrying_water():
             waters_after = {(int(x), int(y)) for x, y in core.water_positions()}
             disappeared = waters_before - waters_after
-            # Pay at most once per original spawn tile that just left the grid.
-            paid_this_step = 0.0
-            for pos in disappeared:
-                if pos in self._awardable_water:
-                    paid_this_step += self.water_pickup
-                    self._awardable_water.discard(pos)
-            if paid_this_step > 0.0:
-                shaped += paid_this_step
-                breakdown["water_pickup"] = paid_this_step
+            new_originals = [p for p in disappeared if p in self._awardable_water]
+            for p in new_originals:
+                self._awardable_water.discard(p)  # a dropped/re-picked ball never re-pays
+            if new_originals:
                 self._stage_water = True
+                if self.water_pickup_once:
+                    # Reward only the FIRST bucket picked up this episode (anti-hoard): the
+                    # per-bucket variant let the agent farm ~n_water*water_pickup by collecting
+                    # every ball WITHOUT extinguishing, an easy rival to the harder lava reward.
+                    if not self._paid_water:
+                        shaped += self.water_pickup
+                        breakdown["water_pickup"] = self.water_pickup
+                        self._paid_water = True
+                else:
+                    paid = self.water_pickup * len(new_originals)
+                    shaped += paid
+                    breakdown["water_pickup"] = paid
 
         extinguished = int(info.get("extinguished_now", 0) or 0)
         if extinguished <= 0:

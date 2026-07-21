@@ -37,7 +37,7 @@ if str(ROOT) not in sys.path:
 
 from algorithms import DQN
 from pipelines import make_complex_env
-from utils import multi_rollout_video
+from utils import grid_rollout_video
 from utils import (
     describe_device,
     get_torch_device,
@@ -53,8 +53,8 @@ OUT_ROOT = ROOT / "graphs" / "complex_dqn"
 # erosion of potential-based shaping (which made holding the key net-negative and
 # caused the agent to unlearn it). key_drop / leave_right_room stay off.
 SHAPING: dict[str, float] = {
-    "goal_scale": 120.0,       # dominant terminal reward: must exceed the full milestone
-    # sum (5+10+15+15+20+25*3 = 140 reachable) so finishing always beats camping.
+    "goal_scale": 160.0,       # matches the 28%-eval config (friend's). Dominant over the realistic
+    # milestone sum (5+10+15+15+30+50 = 125 for the ~one-water-one-lava solve), so finishing beats camping.
     "step_penalty": 0.05,
     "key_pickup": 5.0,
     "door_open": 10.0,
@@ -63,32 +63,36 @@ SHAPING: dict[str, float] = {
     "key_drop": 15.0,          # gateway action: free the hand for water. Paid ONCE and
     # ONLY when the door is already open (wrapper-guarded) — dropping the key with the
     # door still locked pays nothing, so there is no pick/drop farm.
-    "water_pickup": 20.0,      # > enter_right_room (15): the NEXT milestone must step UP,
-    # not down, or the value gradient sags right where the agent keeps camping.
-    "lava_extinguish": 25.0,   # > water_pickup: each extinguish pulls harder than the last.
-    "lava_death": 8.0,         # softened (was 15): the lava sits in the right room the
-    # agent must now work inside; a big death penalty made it timid exactly where it
-    # needs to toggle water onto lava. Still worse than a timeout, so no suicide bias.
-    "lava_death_with_water": 0.0,  # EXPERIMENT: dying to lava WHILE carrying water is NOT
-    # punished — remove the fear that keeps the agent out of the lava region so random
-    # exploration there can accidentally toggle-extinguish (the rare event we need). Risk:
-    # "grab water then die" can become a camp (~+65 banked); watch whether return rises via
-    # deaths (succ stays 0, lava stays 0) vs genuine extinguishes (lava/goal climb).
+    "water_pickup": 30.0,      # PER-BUCKET; matches the 28%-eval config. Still < lava_extinguish (50)
+    # so a single extinguish beats collecting another bucket once the ferry is discovered.
+    "water_pickup_once": False,  # PER-BUCKET: rewarding each of the 3 balls keeps the agent ROAMING the
+    # lava corner with water in hand — which is how the toggle-extinguish gets DISCOVERED (first-only
+    # removed that roaming and the ferry regressed to 0%).
+    "lava_extinguish": 50.0,   # matches the 28%-eval config (2x our 25). NB: 50 alone is fine — it was
+    # the pairing 50 + n_step 8 that hurt us (n-step VARIANCE, not the reward). n_step stays 5.
+    "lava_death": 8.0,         # matches the 28%-eval config: a SMALL penalty for careless death
+    # WITHOUT water (discourages wandering into lava), while dying WITH water stays free (below) so the
+    # ferry-roaming near lava is not suppressed. Smarter than our all-free lava_death=0.
+    "lava_death_with_water": 0.0,  # dying WHILE carrying water is NOT punished (ferry roaming stays safe).
+    "stall_grace": 8,          # (anti-camp ramp; disabled below)
+    "stall_penalty": 0.0,      # DISABLED: the escalating penalty smeared onto pre-stall actions
+    # (n-step) and taught the agent that e.g. dropping the key is bad, and it never stopped the
+    # GREEDY camp anyway. Replaced by the within-episode eps ramp (greedy early / explore late).
 }
 
 
 @dataclass
 class Config:
-    steps: int = 900_000       # more consolidation time; the ferry only started emerging
-    # ~500k, and the greedy policy needs the low-ε tail (below) to actually optimise.
-    max_steps: int = 200       # tighter credit assignment + more goal attempts per step budget.
-    # 200 keeps timeout cost (200*0.05=10) > lava_death (8), so no suicide incentive; going
-    # lower (e.g. 150) would flip that and force cutting lava_death.
+    steps: int = 4_000_000     # long run (~several hours). Safe to STOP EARLY (Ctrl+C): history,
+    # plots, and agent.pt are checkpointed every 100k, so graphs/weights survive an early stop.
+    # With eps_decay 700k this leaves a ~3.3M LOW-EPS TAIL (the tail consolidates the ferry).
+    max_steps: int = 200       # ~3x the ~70-step optimal solve; timeout cost 200*0.05=10.
     # DQN
-    n_step: int = 5            # propagate the rare lava/goal reward further back per update
+    n_step: int = 5            # baseline value (reverted from 8): 8 + the boosted rewards added too
+    # much n-step target variance and hurt greedy consolidation.
     lr: float = 2.5e-4
     gamma: float = 0.99
-    reward_scale: float = 0.02    # keep Q ~ O(1) (goal reward is 50)
+    reward_scale: float = 0.02    # keep Q ~ O(1); max return ~300 -> Q ~ 6 at this scale
     rnd_coef: float = 0.0         # RND intrinsic exploration (off by default)
     batch_size: int = 64
     # Speed knob: on MPS each gradient update is ~19 ms, so throughput ≈ (updates/s).
@@ -105,7 +109,13 @@ class Config:
     # LOW (0.05) over 700k and train the low-ε tail so the greedy trajectory itself is optimised.
     eps_start: float = 1.0
     eps_end: float = 0.05
-    eps_decay_steps: int = 700_000
+    eps_decay_steps: int = 700_000  # baseline decay (fast early consolidation, PROVEN). With
+    # steps=4M this leaves a ~3.3M LOW-EPS TAIL — the tail consolidates the ferry into the greedy
+    # policy, while keeping the baseline's proven fast early-chain consolidation.
+    # Within-episode eps ramp: act GREEDILY early in the episode (execute the learned
+    # key->door->right chain) and EXPLORE late (the unlearned water->lava->goal tail), so
+    # high global eps stops wrecking the early chain before the agent reaches the frontier.
+    episodic_eps_ramp: bool = True
     learning_starts: int = 5_000
     buffer_size: int = 200_000
     # Prioritized replay: up-sample the rare high-TD water→lava→goal transitions so the
@@ -163,31 +173,50 @@ def run(cfg: Config, out_dir: Path) -> dict:
         double_dqn=cfg.double_dqn,
         prioritized=cfg.prioritized,
         per_beta_steps=cfg.steps,
+        episodic_eps_ramp=cfg.episodic_eps_ramp,
     )
     print(f"params={agent.n_parameters():,}  n_step={cfg.n_step}  reward_scale={cfg.reward_scale}  "
           f"n_envs={cfg.n_envs}  PER={cfg.prioritized}", flush=True)
 
     # Periodic greedy-rollout videos every VIDEO_EVERY steps — a visual trace of where the
     # agent stalls as training progresses. Same seed each time so the map is fixed and the
-    # behaviour is directly comparable across snapshots.
+    # behaviour is directly comparable across snapshots. History / plots / weights are ALSO
+    # checkpointed every VIDEO_EVERY so a run stopped early (Ctrl+C) keeps its outputs.
     out_dir.mkdir(parents=True, exist_ok=True)
     video_dir = out_dir / "videos"
     video_dir.mkdir(parents=True, exist_ok=True)
     video_env = env_fn()
     VIDEO_EVERY = 100_000
     _last_video = {"milestone": 0}
+    _ckpt: dict = {"history": None}  # live history ref, so an early Ctrl+C can still save graphs
 
-    def _video_cb(step: int) -> None:
+    def _save_progress(history) -> None:
+        """Persist history.json + plots + agent.pt (so a run stopped early keeps its outputs)."""
+        if history is None:
+            return
+        save_training_history(history, out_dir / "history.json")
+        try:
+            plot_training_history(
+                history, title="ComplexEnv — from-scratch DQN",
+                save_prefix="complex_dqn", folder=out_dir, window=20, show=False,
+            )
+        except Exception as exc:  # plotting must never sink a long run
+            print(f"[plot] skipped: {exc}", flush=True)
+        agent.save(out_dir / "agent.pt")
+
+    def _video_cb(step: int, history) -> None:
+        _ckpt["history"] = history
         milestone = step // VIDEO_EVERY
         if milestone <= _last_video["milestone"]:
             return
         _last_video["milestone"] = milestone
+        _save_progress(history)  # checkpoint graphs + weights so an early stop keeps them
         fname = str(video_dir / f"rollout_{milestone * (VIDEO_EVERY // 1000)}k.mp4")
         try:
-            # Several episodes across varied seeds (different maps/spawns) so the
-            # snapshot samples the policy's behaviour rather than one fixed run.
-            results = multi_rollout_video(
-                agent, video_env, fname, n_episodes=6, max_steps=cfg.max_steps,
+            # Several episodes across varied seeds, tiled into one GRID video that plays
+            # them simultaneously (easier to read than a concatenation).
+            results = grid_rollout_video(
+                agent, video_env, fname, n_episodes=20, max_steps=cfg.max_steps,
                 fps=8, seed=cfg.seed, explore=False,
             )
             rets = ", ".join(f"{r:.0f}" for _, r in results)
@@ -196,34 +225,29 @@ def run(cfg: Config, out_dir: Path) -> dict:
             print(f"[video] skipped at step {step}: {exc}", flush=True)
 
     t0 = time.time()
-    history = agent.train(
-        env_fn, total_timesteps=cfg.steps, log_every_episodes=10, n_envs=cfg.n_envs,
-        callback=_video_cb,
-    )
+    interrupted = False
+    try:
+        history = agent.train(
+            env_fn, total_timesteps=cfg.steps, log_every_episodes=10, n_envs=cfg.n_envs,
+            callback=_video_cb,
+        )
+    except KeyboardInterrupt:
+        interrupted = True
+        history = _ckpt["history"]
+        print("\n[interrupted] stopping early — saving graphs / weights / eval …", flush=True)
     minutes = round((time.time() - t0) / 60, 1)
     video_env.close()
 
-    save_training_history(history, out_dir / "history.json")
-    try:
-        plot_training_history(
-            history,
-            title="ComplexEnv — from-scratch DQN",
-            save_prefix="complex_dqn",
-            folder=out_dir,
-            window=20,
-            show=False,
-        )
-    except Exception as exc:  # plotting must never sink a long run
-        print(f"[plot] skipped: {exc}", flush=True)
+    _save_progress(history)  # final graphs + weights (covers both completion and early stop)
 
-    eval_stats = agent.evaluate(env_fn(), n_episodes=50, seed=9999)
-    agent.save(out_dir / "agent.pt")
+    eval_stats = agent.evaluate(env_fn(), n_episodes=50, seed=9999) if history is not None else {}
 
     result = {
         "generated": datetime.now(timezone.utc).isoformat(),
         "config": asdict(cfg),
         "eval": eval_stats,
         "minutes": minutes,
+        "interrupted": interrupted,
         "episodes": agent.total_episodes,
         "steps": agent.total_steps,
     }
@@ -255,6 +279,7 @@ def _parse_args() -> Config:
     p.add_argument("--width-mult", type=int, default=cfg.width_mult)
     p.add_argument("--n-extra-conv", type=int, default=cfg.n_extra_conv)
     p.add_argument("--no-per", action="store_true", help="disable prioritized replay")
+    p.add_argument("--no-ep-eps-ramp", action="store_true", help="disable within-episode eps ramp")
     p.add_argument("--seed", type=int, default=cfg.seed)
     p.add_argument("--device", type=str, default=None, help="cpu / mps / cuda (auto if omitted)")
     p.add_argument("--out", type=str, default=None, help="output dir (default graphs/complex_dqn/<ts>)")
@@ -274,6 +299,7 @@ def _parse_args() -> Config:
     cfg.width_mult = a.width_mult
     cfg.n_extra_conv = a.n_extra_conv
     cfg.prioritized = not a.no_per
+    cfg.episodic_eps_ramp = not a.no_ep_eps_ramp
     cfg.seed = a.seed
     cfg.device = a.device
     cfg._out = a.out  # type: ignore[attr-defined]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import math
 import os
 import random
 from typing import Any, Callable
@@ -107,4 +108,68 @@ def multi_rollout_video(
             for _ in range(int(gap_frames)):  # brief freeze between episodes
                 video.append_data(frame)
             results.append((steps, total_reward))
+    return results
+
+
+def grid_rollout_video(
+    agent,
+    env,
+    filename,
+    *,
+    n_episodes=6,
+    max_steps=200,
+    fps=8,
+    seed=None,
+    explore=False,
+    border=2,
+    pad_color=0,
+):
+    """Record several episodes and tile them into a GRID that plays simultaneously.
+
+    Instead of concatenating episodes end-to-end (hard to scrub through), every episode
+    is rolled out, then all are shown side-by-side in one mp4 advancing in lock-step.
+    Shorter episodes freeze on their final frame so every cell stays in sync. A near-
+    square grid is used (e.g. 6 episodes -> 2x3). Returns a list of ``(steps, reward)``.
+    """
+    episodes: list[list[np.ndarray]] = []
+    results: list[tuple[int, float]] = []
+    for i in range(int(n_episodes)):
+        ep_seed = None if seed is None else int(seed) + i
+        obs, _ = env.reset(seed=ep_seed)
+        frames = [np.asarray(env.render())]
+        total_reward, steps = 0.0, 0
+        for steps in range(1, int(max_steps) + 1):
+            action = agent.select_action(obs, explore=explore)
+            obs, reward, terminated, truncated, _ = env.step(action)
+            total_reward += float(reward)
+            frames.append(np.asarray(env.render()))
+            if terminated or truncated:
+                break
+        episodes.append(frames)
+        results.append((steps, total_reward))
+
+    # Pad every episode to the longest length by freezing on its last frame.
+    length = max(len(f) for f in episodes)
+    for frames in episodes:
+        last = frames[-1]
+        frames.extend([last] * (length - len(frames)))
+
+    def _rgb(fr: np.ndarray) -> np.ndarray:
+        return np.stack([fr] * 3, axis=-1) if fr.ndim == 2 else fr
+
+    h, w = _rgb(episodes[0][0]).shape[:2]
+    cols = int(math.ceil(math.sqrt(n_episodes)))
+    rows = int(math.ceil(n_episodes / cols))
+    canvas_h = rows * h + (rows + 1) * border
+    canvas_w = cols * w + (cols + 1) * border
+
+    with imageio.get_writer(filename, fps=fps) as video:
+        for t in range(length):
+            canvas = np.full((canvas_h, canvas_w, 3), pad_color, dtype=np.uint8)
+            for idx in range(int(n_episodes)):
+                r, c = divmod(idx, cols)
+                y = border + r * (h + border)
+                x = border + c * (w + border)
+                canvas[y:y + h, x:x + w, :] = _rgb(episodes[idx][t])
+            video.append_data(canvas)
     return results
