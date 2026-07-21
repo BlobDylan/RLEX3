@@ -371,6 +371,7 @@ class DQN(BaseAlgorithm):
         eps_ramp_greedy_steps: int = 25,
         eps_ramp_full_steps: int = 100,
         eps_ramp_floor: float = 0.1,
+        eps_ramp_gate: bool = True,
     ) -> None:
         super().__init__(obs_shape, n_actions, device=device, seed=seed)
 
@@ -395,6 +396,11 @@ class DQN(BaseAlgorithm):
         # Floor on the ramp multiplier: the early-episode phase is NEAR-greedy, not exactly
         # greedy, so a deterministic bad trajectory can't lock the agent in (a little noise).
         self.eps_ramp_floor = float(eps_ramp_floor)
+        # Progress gate: the greedy-early ramp only helps ONCE the early chain is learned.
+        # While global eps is high (early training) the ramp is blended toward uniform
+        # eps-greedy so exploration isn't starved before the door exists; it phases in as
+        # global eps anneals toward eps_end. (False = old always-on ramp.)
+        self.eps_ramp_gate = bool(eps_ramp_gate)
         # loss.item() forces a device sync — only do it every N updates.
         self.log_loss_every = max(0, int(log_loss_every))
         self.width_mult = max(1, int(width_mult))
@@ -460,7 +466,11 @@ class DQN(BaseAlgorithm):
 
         A floor (``eps_ramp_floor``) keeps the early phase NEAR-greedy rather than exactly
         greedy. Defaults (seg=25, greedy=25, full=100, floor=0.1) give: steps 0-24 -> 0.10,
-        25-49 -> 0.40, 50-74 -> 0.70, 75+ -> 1.0."""
+        25-49 -> 0.40, 50-74 -> 0.70, 75+ -> 1.0.
+
+        When ``eps_ramp_gate`` is on, this staircase is blended toward uniform (scale 1)
+        while global ε is high — the greedy-early shape only pays off once the early chain
+        is learned, so it phases in as global ε anneals from ``eps_start`` to ``eps_end``."""
         if not self.episodic_eps_ramp:
             return None
         seg = self.eps_ramp_segment
@@ -468,7 +478,14 @@ class DQN(BaseAlgorithm):
         greedy_segs = self.eps_ramp_greedy_steps / seg
         full_segs = max(greedy_segs + 1.0, self.eps_ramp_full_steps / seg)
         frac = np.clip((step_idx - greedy_segs + 1.0) / (full_segs - greedy_segs), 0.0, 1.0)
-        return self.eps_ramp_floor + (1.0 - self.eps_ramp_floor) * frac
+        ramp = self.eps_ramp_floor + (1.0 - self.eps_ramp_floor) * frac
+        if self.eps_ramp_gate:
+            # gate in [0,1]: 0 while ε is at eps_start (ramp off -> uniform), 1 once ε has
+            # annealed to eps_end (full staircase). Blend: scale = 1 - gate*(1 - ramp).
+            span = max(1e-8, self.eps_start - self.eps_end)
+            gate = float(np.clip((self.eps_start - self.epsilon()) / span, 0.0, 1.0))
+            ramp = 1.0 - gate * (1.0 - ramp)
+        return ramp
 
     def select_action(self, obs: np.ndarray, *, explore: bool = True, eps_scale: float | None = None) -> int:
         eps = self.epsilon() * (1.0 if eps_scale is None else float(eps_scale))

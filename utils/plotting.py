@@ -1,4 +1,4 @@
-"""Training-curve helpers — save assignment graphs under ``graphs/``."""
+"""Training-curve helpers — save assignment graphs under ``output/``."""
 
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def graphs_dir(folder: str | Path = "graphs") -> Path:
-    """Return (and create) the project ``graphs/`` directory."""
+def graphs_dir(folder: str | Path = "output") -> Path:
+    """Return (and create) the project ``output/`` directory."""
     path = Path(folder)
     if not path.is_absolute():
         # Prefer repo root when running from a notebook cwd.

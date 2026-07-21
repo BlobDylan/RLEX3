@@ -166,6 +166,88 @@ class BaseAlgorithm(ABC):
             x = x.unsqueeze(0)
         return x
 
+    # ------------------------------------------------------------------
+    # Shared training-history / logging helpers.
+    # Used by the on-policy agents (REINFORCE, PPO) so their history dicts and
+    # printed logs match DQN's, which keeps its own equivalents.
+    # ------------------------------------------------------------------
+    STAGE_KEYS: tuple[str, ...] = (
+        "stage_key", "stage_door", "stage_right", "stage_water", "stage_lava", "stage_goal",
+    )
+
+    def _new_history(self) -> dict[str, list[float]]:
+        keys = ("episode_return", "episode_length", "episode_success", "loss", "epsilon", "steps")
+        history: dict[str, list[float]] = {k: [] for k in keys}
+        for sk in self.STAGE_KEYS:
+            history[sk] = []
+        return history
+
+    @staticmethod
+    def _info_at(infos: Any, i: int) -> dict:
+        """Pull the i-th env's info dict from a (Sync)VectorEnv info payload."""
+        if isinstance(infos, (list, tuple)):
+            return dict(infos[i] or {})
+        if not isinstance(infos, dict):
+            return {}
+        if "final_info" in infos:  # gymnasium>=0.26 uses final_info for done envs
+            fi = infos["final_info"]
+            if fi is not None and i < len(fi) and fi[i] is not None:
+                return dict(fi[i])
+        out: dict = {}
+        for k, v in infos.items():
+            if k in ("final_observation", "final_info", "_final_observation", "_final_info"):
+                continue
+            try:
+                out[k] = v[i]
+            except Exception:
+                continue
+        return out
+
+    @staticmethod
+    def _success_flag(info: dict, terminated: bool) -> float:
+        if "success" in info:
+            return 1.0 if info["success"] else 0.0
+        return 1.0 if terminated else 0.0
+
+    def _record_episode(
+        self, history, recent_returns, recent_success, recent_stages,
+        ep_return, ep_len, success, info, log_every_episodes, saw_stages, note: str = "",
+    ) -> bool:
+        """Append one finished episode to ``history`` and print a periodic log line."""
+        recent_returns.append(ep_return)
+        recent_success.append(success)
+        history["episode_return"].append(float(ep_return))
+        history["episode_length"].append(float(ep_len))
+        history["episode_success"].append(float(success))
+        history["steps"].append(float(self.total_steps))
+        for sk in self.STAGE_KEYS:
+            val = 1.0 if info.get(sk) else 0.0
+            if sk in info:
+                saw_stages = True
+            history[sk].append(val)
+            recent_stages[sk].append(val)
+        if log_every_episodes and self.total_episodes % max(1, log_every_episodes) == 0:
+            mean_r = float(np.mean(recent_returns)) if recent_returns else 0.0
+            succ = float(np.mean(recent_success)) if recent_success else 0.0
+            line = (
+                f"steps={self.total_steps:>8d}  episodes={self.total_episodes:>5d}  "
+                f"return={ep_return:7.2f}  mean20={mean_r:7.2f}  succ20={succ:5.1%}"
+            )
+            if note:
+                line += f"  {note}"
+            if saw_stages:
+                short = {
+                    "stage_key": "key", "stage_door": "door", "stage_right": "right",
+                    "stage_water": "water", "stage_lava": "lava", "stage_goal": "goal",
+                }
+                parts = [
+                    f"{lbl}={(float(np.mean(recent_stages[sk])) if recent_stages[sk] else 0.0):4.0%}"
+                    for sk, lbl in short.items()
+                ]
+                line += "  " + " ".join(parts)
+            print(line, flush=True)
+        return saw_stages
+
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}("

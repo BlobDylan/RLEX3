@@ -1,33 +1,35 @@
 ---
-description: Follow PROJECT_ROADMAP.md — read current step, scope work, update progress at end
+description: Follow REPORT_MEMOS.md — the single source of truth for experiments, findings, and remaining work
 alwaysApply: true
 ---
 
-# Project roadmap workflow
+# Project workflow
 
-Source of truth: `PROJECT_ROADMAP.md`.
+Source of truth: `REPORT_MEMOS.md` (replaces the old `PROJECT_ROADMAP.md` + `EXPERIMENTS.md`).
 
 ## At the start of every task
 
-1. **Read** `PROJECT_ROADMAP.md` — especially `## Current step` and the matching `## Step N` section.
-2. **Scope** work to that step unless the user explicitly asks to jump ahead or change steps.
-3. **Adapt** the user's request to the current step's exit criteria and checklist (do the smallest change that advances those items).
-4. If the request conflicts with the roadmap (e.g. ComplexEnv while Step 3 is open), say so briefly and either stay on the current step or ask before skipping.
+1. **Read** `REPORT_MEMOS.md` — especially `## 8. Remaining work` (open TODO), the results
+   tables (§4), and the relevant experiment-journey section (§5) for context.
+2. **Scope** work to the open TODO unless the user explicitly asks otherwise.
+3. Respect the hard constraints (§9): pixels-only, from-scratch, no geometry rewards, envs
+   fixed except `max_steps`, seed everything.
 
 ## While working
 
-- Prefer fixes/experiments that unblock the **Current step** exit criteria.
-- Log meaningful runs in `EXPERIMENTS.md` and plots under `graphs/` when the step calls for it.
-- Do not mark a step done until its exit criteria are actually met.
+- Prefer changes that advance an open TODO item or a required deliverable (plots, videos,
+  inference table, report).
+- Save run outputs/plots under `graphs/` (regenerable; gitignored per run dir).
 
 ## At the end of every task (required)
 
-Update `PROJECT_ROADMAP.md` before finishing:
+Update `REPORT_MEMOS.md` before finishing when the work is report-relevant:
 
-1. Refresh **Current step** (status, what changed, next actions).
-2. Tick completed checklist items (`[ ]` → `[x]`) for the step you worked on.
-3. Update the **Progress overview** table status (`pending` / `in progress` / `done` / `partial`) and the `← now` marker.
-4. If exit criteria are met: mark the step **done**, move `← now` to the next step, and rewrite **Current step** for that next step.
+1. Record meaningful runs / findings in the experiment journey (§5) — setup, result, what
+   worked, what failed, interesting findings.
+2. Refresh the results tables (§4) and best-settings (§7) if numbers/configs changed.
+3. Tick or add items in `## 8. Remaining work`.
+4. Capture negative results in §6 "What we tried that FAILED" — they are valuable for the report.
 5. If still blocked: keep the same step, note what failed and what to try next.
 
 Do not leave the roadmap stale after a completed coding/experiment turn.

@@ -67,6 +67,7 @@ def make_complex_env(
 
 def make_simple_env(
     *,
+    max_steps: int = 100,
     tile_size: int = 12,
     keep_fraction: float = 0.75,
     cnn_size: int = 64,
@@ -74,7 +75,7 @@ def make_simple_env(
     frame_stack: int = 1,
 ):
     """SimpleRoomEnv sanity stack (grayscale by default, matches Exp7)."""
-    env = SimpleRoomEnv(max_steps=100, tile_size=tile_size)
+    env = SimpleRoomEnv(max_steps=max_steps, tile_size=tile_size)
     env = SimpleRoomShapingWrapper(env, goal_scale=50.0, step_penalty=0.1)
     env = ActionSubsetWrapper(env, action_ids=SIMPLE_ACTIONS)
     env = CropOuterWallsWrapper(env)

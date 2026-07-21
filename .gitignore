@@ -5,13 +5,11 @@ __pycache__/
 *.pyc
 .vscode/
 
-# Training artifacts. Weights are large; run outputs are regenerable — the
-# experiment *narrative* lives in PROJECT_ROADMAP.md, not in versioned outputs.
+# Raw run outputs (weights, history, plots, videos) live under output/ — regenerable,
+# not versioned. Curated report assets (graph images + rollout videos, no weights/history)
+# are copied into results/ (TRACKED) via scripts/export_results.py.
+# The experiment *narrative* lives in REPORT_MEMOS.md, not in versioned outputs.
 *.pt
 *.pth
-graphs/**/.mpl/
-# ComplexEnv from-scratch DQN run outputs (timestamped run dirs: agent.pt [above],
-# history.json, result.json, plots, rollout videos). Regenerable; keep local.
-graphs/complex_dqn/
-# Rollout / render videos generated under any run dir.
-graphs/**/videos/
+*.log
+output/

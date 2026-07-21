@@ -45,7 +45,7 @@ from utils import (
     save_training_history,
 )
 
-OUT_ROOT = ROOT / "graphs" / "complex_dqn"
+OUT_ROOT = ROOT / "output" / "complex_dqn"
 # Monotonically-increasing 'pull-forward' shaping. Each stage is worth MORE than the
 # previous (enter_right_room > door_open), so the agent is pulled *through* the door
 # rather than camping at it, and the goal dominates. First-time only (anti-farm). A
@@ -106,9 +106,11 @@ class Config:
     # Two jobs for ε now. (1) DISCOVERY: stay moderate through ~500k so the water→lava→goal
     # ferry keeps getting sampled. (2) GREEDY CONSOLIDATION: the old permanent 0.20 floor left
     # the greedy policy under-optimised (eval: greedy 0% vs ε=0.2 ~25%, even key 72%), so anneal
-    # LOW (0.05) over 700k and train the low-ε tail so the greedy trajectory itself is optimised.
+    # LOW over 700k and train the low-ε tail so the greedy trajectory itself is optimised.
+    # eps_end 0.075 (was 0.05): a touch more exploration through the long low-ε tail to keep the
+    # rare water→lava→goal ferry getting sampled while still consolidating the greedy policy.
     eps_start: float = 1.0
-    eps_end: float = 0.05
+    eps_end: float = 0.075
     eps_decay_steps: int = 700_000  # baseline decay (fast early consolidation, PROVEN). With
     # steps=4M this leaves a ~3.3M LOW-EPS TAIL — the tail consolidates the ferry into the greedy
     # policy, while keeping the baseline's proven fast early-chain consolidation.
@@ -116,6 +118,10 @@ class Config:
     # key->door->right chain) and EXPLORE late (the unlearned water->lava->goal tail), so
     # high global eps stops wrecking the early chain before the agent reaches the frontier.
     episodic_eps_ramp: bool = True
+    # PROGRESS-GATE the ramp: while global eps is high (early training) the greedy-early
+    # shape starves the exploration that LEARNS the door in the first place, so blend toward
+    # uniform eps-greedy early and phase the ramp in as global eps anneals to eps_end.
+    eps_ramp_gate: bool = True
     learning_starts: int = 5_000
     buffer_size: int = 200_000
     # Prioritized replay: up-sample the rare high-TD water→lava→goal transitions so the
@@ -135,6 +141,21 @@ def build_env_fn(cfg: Config):
         )
 
     return _fn
+
+
+def _merge_histories(prior: dict | None, cur: dict) -> dict:
+    """Concatenate a prior run's history with the continuation, key-by-key, so the
+    resumed run's plots show the FULL curve (step counters are absolute → monotonic)."""
+    if not prior:
+        return cur
+    merged: dict = {}
+    for k in set(prior) | set(cur):
+        pv, cv = prior.get(k, []), cur.get(k, [])
+        if isinstance(pv, list) and isinstance(cv, list):
+            merged[k] = list(pv) + list(cv)
+        else:
+            merged[k] = cv
+    return merged
 
 
 def run(cfg: Config, out_dir: Path) -> dict:
@@ -174,9 +195,24 @@ def run(cfg: Config, out_dir: Path) -> dict:
         prioritized=cfg.prioritized,
         per_beta_steps=cfg.steps,
         episodic_eps_ramp=cfg.episodic_eps_ramp,
+        eps_ramp_gate=cfg.eps_ramp_gate,
     )
     print(f"params={agent.n_parameters():,}  n_step={cfg.n_step}  reward_scale={cfg.reward_scale}  "
           f"n_envs={cfg.n_envs}  PER={cfg.prioritized}", flush=True)
+
+    # Resume: reload weights + step/episode counters and continue training in place. The
+    # replay buffer is not persisted, so update() self-warms for ~learning_starts steps
+    # before it resumes learning (negligible vs a multi-million-step run).
+    resume_dir = getattr(cfg, "_resume_dir", None)
+    prior_history: dict | None = None
+    if resume_dir:
+        ckpt = Path(resume_dir) / "agent.pt"
+        agent.load(ckpt)
+        print(f"[resume] loaded {ckpt}: total_steps={agent.total_steps:,} "
+              f"episodes={agent.total_episodes:,} → training to {cfg.steps:,}", flush=True)
+        hp = Path(resume_dir) / "history.json"
+        if hp.is_file():
+            prior_history = json.loads(hp.read_text())
 
     # Periodic greedy-rollout videos every VIDEO_EVERY steps — a visual trace of where the
     # agent stalls as training progresses. Same seed each time so the map is fixed and the
@@ -187,17 +223,18 @@ def run(cfg: Config, out_dir: Path) -> dict:
     video_dir.mkdir(parents=True, exist_ok=True)
     video_env = env_fn()
     VIDEO_EVERY = 100_000
-    _last_video = {"milestone": 0}
+    _last_video = {"milestone": agent.total_steps // VIDEO_EVERY}
     _ckpt: dict = {"history": None}  # live history ref, so an early Ctrl+C can still save graphs
 
     def _save_progress(history) -> None:
         """Persist history.json + plots + agent.pt (so a run stopped early keeps its outputs)."""
         if history is None:
             return
-        save_training_history(history, out_dir / "history.json")
+        full = _merge_histories(prior_history, history)
+        save_training_history(full, out_dir / "history.json")
         try:
             plot_training_history(
-                history, title="ComplexEnv — from-scratch DQN",
+                full, title="ComplexEnv — from-scratch DQN",
                 save_prefix="complex_dqn", folder=out_dir, window=20, show=False,
             )
         except Exception as exc:  # plotting must never sink a long run
@@ -262,6 +299,31 @@ def run(cfg: Config, out_dir: Path) -> dict:
     return result
 
 
+def _resume_config(a) -> Config:
+    """Rebuild the exact Config of a finished/partial run and set it to continue in place."""
+    resume_dir = Path(a.resume)
+    if resume_dir.is_file():  # allow passing the agent.pt directly
+        resume_dir = resume_dir.parent
+    result_path = resume_dir / "result.json"
+    if not result_path.is_file():
+        raise SystemExit(f"--resume: {result_path} not found (need a completed run dir)")
+    result = json.loads(result_path.read_text())
+    saved = result.get("config", {})
+    completed = int(result.get("steps", 0))
+    cfg = Config(**{k: v for k, v in saved.items() if k in Config.__dataclass_fields__})
+    if a.steps <= completed:
+        raise SystemExit(
+            f"--steps ({a.steps}) must exceed the resumed run's {completed} completed steps "
+            f"(e.g. --steps {completed + 2_000_000} to add 2M)"
+        )
+    cfg.steps = a.steps
+    if a.device is not None:
+        cfg.device = a.device
+    cfg._resume_dir = str(resume_dir)  # type: ignore[attr-defined]
+    cfg._out = str(resume_dir)         # type: ignore[attr-defined]  (continue in place)
+    return cfg
+
+
 def _parse_args() -> Config:
     cfg = Config()
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -280,10 +342,18 @@ def _parse_args() -> Config:
     p.add_argument("--n-extra-conv", type=int, default=cfg.n_extra_conv)
     p.add_argument("--no-per", action="store_true", help="disable prioritized replay")
     p.add_argument("--no-ep-eps-ramp", action="store_true", help="disable within-episode eps ramp")
+    p.add_argument("--no-ep-eps-gate", action="store_true",
+                   help="disable the progress gate (ramp always on, even at high global eps)")
     p.add_argument("--seed", type=int, default=cfg.seed)
     p.add_argument("--device", type=str, default=None, help="cpu / mps / cuda (auto if omitted)")
-    p.add_argument("--out", type=str, default=None, help="output dir (default graphs/complex_dqn/<ts>)")
+    p.add_argument("--out", type=str, default=None, help="output dir (default output/complex_dqn/<ts>)")
+    p.add_argument("--resume", type=str, default=None,
+                   help="resume from an existing run dir (or its agent.pt): reloads weights + "
+                        "counters and continues IN PLACE up to --steps (must exceed completed steps)")
     a = p.parse_args()
+
+    if a.resume:
+        return _resume_config(a)
 
     cfg.steps = a.steps
     cfg.max_steps = a.max_steps
@@ -300,6 +370,7 @@ def _parse_args() -> Config:
     cfg.n_extra_conv = a.n_extra_conv
     cfg.prioritized = not a.no_per
     cfg.episodic_eps_ramp = not a.no_ep_eps_ramp
+    cfg.eps_ramp_gate = not a.no_ep_eps_gate
     cfg.seed = a.seed
     cfg.device = a.device
     cfg._out = a.out  # type: ignore[attr-defined]

@@ -20,12 +20,14 @@ env classes are **fixed** — all preprocessing / reward shaping lives in wrappe
 envs/        ComplexEnv, SimpleRoomEnv (fixed environment classes)
 wrappers/    obs / action / reward-shaping wrappers (grayscale, crop, tile-inset,
              resize, frame-stack, ComplexShapingWrapper, SimpleRoomShapingWrapper)
-algorithms/  BaseAlgorithm, DQN (Double + n-step + reward-scaling), hparam_search,
-             rainbow (Double+Dueling+Noisy+PER+C51+n-step — optional escalation)
+algorithms/  BaseAlgorithm, networks (shared CNN encoder), DQN (Double + n-step +
+             reward-scaling), REINFORCE, PPO
 utils/       device selection, training-curve plotting, rollout videos
 pipelines.py make_complex_env / make_simple_env — the single source of truth for
              the wrapper stacks used by every script
 scripts/     experiment runners (see below)
+archive/     retired one-offs kept for reference (rainbow, hparam_search sweeps,
+             ab_tile16 / overnight_complex runners) — not part of the app
 colab/       Google-Drive / Colab repo-root bootstrap helpers
 env_explorer.py   optional inline, button-driven env explorer (assignment tool)
 ```
