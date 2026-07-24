@@ -1,0 +1,31 @@
+{
+  "generated": "2026-07-24T08:13:08.254796+00:00",
+  "config": {
+    "steps": 120000,
+    "max_steps": 100,
+    "n_envs": 8,
+    "lr": 0.0003,
+    "gamma": 0.95,
+    "entropy_coef": 0.05,
+    "ent_coef_final": 0.002,
+    "ent_anneal_steps": 50000,
+    "episodes_per_update": 8,
+    "width_mult": 1,
+    "n_extra_conv": 0,
+    "seed": 0,
+    "device": "mps",
+    "out": null,
+    "env": "simple"
+  },
+  "eval": {
+    "mean_return": -7.617999999999982,
+    "std_return": 11.669407697051291,
+    "mean_length": 96.18,
+    "success_rate": 0.04,
+    "n_episodes": 50.0
+  },
+  "minutes": 3.4,
+  "interrupted": false,
+  "episodes": 1642,
+  "steps": 120000
+}

@@ -21,11 +21,11 @@ from-scratch algorithms.
 | `SimpleRoomEnv` | empty 10×10 room (sanity check)         | step onto the green goal                                     |
 | `ComplexEnv`    | key → locked door → water → lava → goal | ferry water to extinguish the lava ring, then reach the goal |
 
-| Algorithm | Family       | Status                                                       |
-| --------- | ------------ | ------------------------------------------------------------ |
-| DQN       | value-based  | working; ComplexEnv **52% greedy** at 4M (stalled improving) |
-| REINFORCE | policy-based | implemented; collapse issue diagnosed + hardened             |
-| PPO       | actor-critic | implemented; greedy-gap diagnosed + LR-anneal fix            |
+| Algorithm | Family       | Status                                                        |
+| --------- | ------------ | ------------------------------------------------------------- |
+| DQN       | value-based  | working; ComplexEnv **52% greedy** at 4M (stalled improving)  |
+| REINFORCE | policy-based | SimpleRoom **~85% sampled** but greedy degenerate (§5.4)      |
+| PPO       | actor-critic | SimpleRoom **solved, 100% greedy** (§5.5); ComplexEnv pending |
 
 ### Assignment constraints & grading levers (from the brief)
 
@@ -97,11 +97,11 @@ Event-based only (no geometry). Small anti-farm milestone bonuses guide explorat
 
 ### SimpleRoom (sanity check)
 
-| Algo      | Greedy success  | Notes                                                        |
-| --------- | --------------- | ------------------------------------------------------------ |
-| DQN       | **~90–100%**    | Exp6/6b winner hypers; PASSED sanity check                   |
-| REINFORCE | ~4% (collapsed) | entropy collapse; defaults hardened, re-run pending          |
-| PPO       | **100%**        | **solved** — 100% greedy, converges ~23–30k steps (see §5.5) |
+| Algo      | Greedy success            | Notes                                                           |
+| --------- | ------------------------- | --------------------------------------------------------------- |
+| DQN       | **100%**                  | clean 60k run (winner hypers, `gradient_steps=4`); mean len 9.0 |
+| REINFORCE | ~85% sampled / ~4% greedy | strong stochastic policy; greedy argmax degenerate (§5.4)       |
+| PPO       | **100%**                  | **solved** — 100% greedy, converges ~23–30k steps (see §5.5)    |
 
 ### ComplexEnv (hard task)
 
@@ -183,23 +183,32 @@ next stage). Countered with the pull-forward staircase + exploration/replay tool
 | friend-adopt | peer's **moderate** magnitudes (goal 160, water 30, lava 50, `lava_death` 8), `n_step=5`  | peer reached **28% greedy**; matching magnitudes closed most of our 14%→28% gap                                                  |
 | **4M run**   | final config (moderate magnitudes, `n_step=5`, PER, ε-ramp, 700k→0.075 + 3.3M low-ε tail) | **52% greedy** (key96 door94 right90 water62 lava54 goal52); train `succ20` still trending up at 4M → **resumed** for more steps |
 
-### 5.4 REINFORCE — entropy collapse (SimpleRoom)
+### 5.4 REINFORCE — greedy-vs-stochastic gap that MC can't close (SimpleRoom)
 
-**Symptom:** 300k steps, eval **4%**; training `succ20` never climbed (~7–9%), episode
-length pinned near `max_steps`, **`loss → -0.0`** for the whole tail.
+**Two-stage story.** (1) _Vanilla_ REINFORCE **collapsed**: the policy output `p=[0,0,1.0]`
+on every state (entropy exactly 0, `loss→-0.0`, gradients dead) — a single-action policy,
+~4% greedy. Caused by weak entropy bonus (0.01) + high lr (7e-4) + return-normalization
+noise on all-failure batches. (2) After fixing collapse (orthogonal init w/ 0.01 logit-head
+gain, entropy annealing, **separate value-baseline net** [Sutton & Barto §13.4, MC returns,
+**no bootstrap**], reward scaling, truncation-tail bootstrap), REINFORCE learns a **competent
+stochastic policy (~80–85% sampled)** — but its **greedy/argmax policy stays degenerate
+(~4%)**.
 
-**Confirmed mechanism:** the saved policy outputs `p = [0, 0, 1.0]` on **every** state
-(entropy exactly 0) — it degenerated to a **single-action policy**. Once `p(a)=1`,
-`log p ≈ 0` and entropy `≈ 0`, so gradients vanish and learning stalls.
+**Confirmed mechanism (the greedy gap):** the trained policy's argmax is **"forward" in
+every one of 256 probed states** (greedy trace `[fwd, fwd, …]` → walks into a wall → times
+out). It never makes "turn" the argmax at orienting states. Two compounding reasons:
+(a) **high-variance MC advantages** can't reliably credit the _minority_ "turn" action
+against the majority-action ("forward") bias; (b) **train/greedy distribution mismatch** —
+the stochastic training policy rarely visits the "stuck-at-wall" states the greedy policy
+lands in, so the policy is untrained there.
 
-**Why:** vanilla Monte-Carlo policy gradient with **no value baseline, no trust region**,
-made fragile by (1) weak entropy bonus `0.01`, (2) high `lr=7e-4`, (3) return
-normalization on mostly-failure batches manufacturing unit-variance noise → the policy
-chased noise into a corner.
-
-**Fix applied** (defaults hardened): `entropy_coef 0.01→0.05`, `lr 7e-4→3e-4`,
-`episodes_per_update 8→16`. Re-run pending. **Report angle:** REINFORCE's high variance /
-premature convergence is exactly the contrast that motivates a baseline (→ actor-critic).
+**Nine distinct configs tried** (shared vs separate baseline, reward scaling, entropy
+annealed-low vs sustained-high, lr 1e-4→6e-4, batch 8/16/48, 60k–150k steps, multi-epoch
+[destabilised to 0%], truncation bootstrap) — **all** left the greedy argmax "forward
+everywhere". This is a **fundamental REINFORCE limitation, not a bug**: closing it needs
+low-variance advantages (GAE) + clipped multi-epoch updates — i.e. **PPO** (which greedy-
+solves the same env at 96–100%). **Decision:** accept REINFORCE as-is; evaluate by sampling
+(~85%) and report the greedy gap as a key finding motivating actor-critic. May revisit.
 
 ### 5.5 PPO — greedy-vs-stochastic gap (SimpleRoom)
 
@@ -231,8 +240,8 @@ the fast DQN. What actually fixed it (beyond LR-anneal, which alone was too slow
 2. **Entropy annealing** (0.01 → 0.002 over ~15k) — the PPO analogue of ε-decay: explore
    while discovering, consolidate greedily after (annealing to _0_ collapses prematurely).
 3. **Reward scaling** (×0.1; shaped goal ≈50 → value targets ~O(5)) — a stable critic.
-4. **Truncation bootstrap** — SAME_STEP autoreset + `γ·V(true final obs)` on timeouts. In
-   SimpleRoom nearly every early episode times out at 100 steps; treating those as _true_
+4. **Truncation bootstrap** — SAME*STEP autoreset + `γ·V(true final obs)` on timeouts. In
+   SimpleRoom nearly every early episode times out at 100 steps; treating those as \_true*
    terminals (V=0) systematically poisons the critic. This was the correctness bug that
    kept our first attempt ~2× slower than the friend's.
 5. **Small frequent rollouts** (32×8 = 256) + **lr 6e-4** — many updates/step, the driver
@@ -271,6 +280,11 @@ the fast DQN. What actually fixed it (beyond LR-anneal, which alone was too slow
   better tool for the tail — the motivation for the actor-critic method.
 - **Throughput reality:** tiny nets → low GPU RAM is normal; wall-clock is update-bound.
   `train_freq` and avoiding host syncs matter more than GPU memory.
+- **Off-policy update density scales with `n_envs`.** With `n_envs=8`, the vec loop learns
+  once per 8 env steps → 8× fewer gradient updates than single-env `train_freq=1`. DQN-simple
+  at `gradient_steps=1` stalled at **30% greedy** (under-trained); raising to `gradient_steps=4`
+  (~0.5 updates/env-step, ~30k updates) hit **100%**. Off-policy budgets are in _updates_, not
+  env steps — unlike on-policy PPO/REINFORCE where `n_envs` just widens the rollout.
 - **Obs:** single RGB frame sufficient; frame-stacking hurt; grid-aligned `feat_hw=8×8`.
 
 ### What we tried that FAILED (valuable negative results)
@@ -288,9 +302,9 @@ the fast DQN. What actually fixed it (beyond LR-anneal, which alone was too slow
 
 ## 7. Best settings (current)
 
-- **DQN / SimpleRoom:** RGB or gray `64×64`; `lr≈2.8e-4`, `γ=0.95`, `batch=128`,
-  `train_freq=1`, `τ=0.001`, `eps_end=0.15`, `eps_decay=20k`, `learning_starts=1k`,
-  Double DQN → ~90–100% greedy.
+- **DQN / SimpleRoom:** RGB `64×64`; `lr≈2.8e-4`, `γ=0.95`, `batch=128`, `train_freq=1`,
+  **`gradient_steps=4`** (with `n_envs=8`), `τ=0.001`, `eps_end=0.15`, `eps_decay=20k`,
+  `learning_starts=1k`, Double DQN → **100% greedy** in 60k steps (~30k updates, mean len 9).
 - **DQN / ComplexEnv (4M final):** RGB `64×64`, `width_mult=2`, `n_extra_conv=1`,
   `n_step=5`, `lr=2.5e-4`, `γ=0.99`, `reward_scale=0.02`, `train_freq=4`, `τ=0.005`,
   PER (max-tree), `n_envs=8`, ε `1.0→0.075` over 700k + ~3.3M low-ε tail, progress-gated

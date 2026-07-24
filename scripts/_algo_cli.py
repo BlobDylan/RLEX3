@@ -127,7 +127,7 @@ def run_reinforce(env_name: str) -> None:
 # ---------------------------------------------------------------------------
 def run_dqn_simple() -> None:
     p = argparse.ArgumentParser(description="Train DQN on the SimpleRoom env (pixels, from scratch).")
-    p.add_argument("--steps", type=int, default=150_000)
+    p.add_argument("--steps", type=int, default=60_000, help="env steps (solves ~40-50k)")
     p.add_argument("--max-steps", type=int, default=100)
     p.add_argument("--n-envs", type=int, default=8)
     # SimpleRoom "winner" hypers (see REPORT_MEMOS §7).
@@ -135,6 +135,10 @@ def run_dqn_simple() -> None:
     p.add_argument("--gamma", type=float, default=0.95)
     p.add_argument("--batch-size", type=int, default=128)
     p.add_argument("--train-freq", type=int, default=1)
+    # With n_envs=8 the vec loop learns once per 8 env steps; gradient_steps=4 restores
+    # ~0.5 updates/env-step so the update budget matches the single-env winner (~20-30k
+    # updates solves SimpleRoom). Without this, n_envs=8 is 8x under-trained.
+    p.add_argument("--gradient-steps", type=int, default=4)
     p.add_argument("--tau", type=float, default=0.001)
     p.add_argument("--eps-end", type=float, default=0.15)
     p.add_argument("--eps-decay-steps", type=int, default=20_000)
@@ -156,6 +160,7 @@ def run_dqn_simple() -> None:
     agent = DQN(
         obs_shape, n_actions, device=device, seed=a.seed,
         lr=a.lr, gamma=a.gamma, batch_size=a.batch_size, train_freq=a.train_freq,
+        gradient_steps=a.gradient_steps,
         tau=a.tau, eps_end=a.eps_end, eps_decay_steps=a.eps_decay_steps,
         learning_starts=a.learning_starts, buffer_size=a.buffer_size,
         double_dqn=True, width_mult=a.width_mult, n_extra_conv=a.n_extra_conv,
@@ -166,6 +171,7 @@ def run_dqn_simple() -> None:
     run_training(
         agent, env_fn, out_dir,
         total_steps=a.steps, n_envs=a.n_envs, max_steps=a.max_steps, seed=a.seed,
+        video_every=5_000,
         title="SimpleRoomEnv — DQN",
         config_dict={**vars(a), "env": "simple"},
     )
