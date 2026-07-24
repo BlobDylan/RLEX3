@@ -21,11 +21,11 @@ from-scratch algorithms.
 | `SimpleRoomEnv` | empty 10×10 room (sanity check)         | step onto the green goal                                     |
 | `ComplexEnv`    | key → locked door → water → lava → goal | ferry water to extinguish the lava ring, then reach the goal |
 
-| Algorithm | Family       | Status                                                        |
-| --------- | ------------ | ------------------------------------------------------------- |
-| DQN       | value-based  | working; ComplexEnv **52% greedy** at 4M (stalled improving)  |
-| REINFORCE | policy-based | SimpleRoom **~85% sampled** but greedy degenerate (§5.4)      |
-| PPO       | actor-critic | SimpleRoom **solved, 100% greedy** (§5.5); ComplexEnv pending |
+| Algorithm | Family       | Status                                                                             |
+| --------- | ------------ | ---------------------------------------------------------------------------------- |
+| DQN       | value-based  | ComplexEnv **94% greedy** at 12M; SimpleRoom **100%**                              |
+| REINFORCE | policy-based | SimpleRoom **~85% sampled** but greedy degenerate (§5.4)                           |
+| PPO       | actor-critic | ComplexEnv **98% greedy** at **1.6M** (≈13× fewer steps than DQN); SimpleRoom 100% |
 
 ### Assignment constraints & grading levers (from the brief)
 
@@ -105,18 +105,18 @@ Event-based only (no geometry). Small anti-farm milestone bonuses guide explorat
 
 ### ComplexEnv (hard task)
 
-| Algo      | Greedy success      | Notes                                                              |
-| --------- | ------------------- | ------------------------------------------------------------------ |
-| DQN       | **52%** (goal) @ 4M | full chain; still improving at 4M — resumed for more steps         |
-| REINFORCE | not yet run         | —                                                                  |
-| PPO       | not yet run         | expected to beat DQN on the ferry (on-policy, no replay bootstrap) |
+| Algo      | Greedy success       | Notes                                                                     |
+| --------- | -------------------- | ------------------------------------------------------------------------- |
+| DQN       | **94%** (goal) @ 12M | full chain solved; key→right 100%, lava 98%, goal 94%; ~13× PPO's samples |
+| REINFORCE | config ready         | tuned `train_reinforce_complex.py`; expect early-stage plateau (§5.4)     |
+| PPO       | **98%** @ ~1.6M      | full chain (goal/lava/water 98%); **~13× more sample-efficient than DQN** |
 
-**4M greedy stage cascade (eval, 50 eps, seed 9999):** key 96% → door 94% → right 90% →
-water 62% → lava 54% → **goal 52%**. Training `succ20` reached 55–85% in the tail
-(`mean20` return ~200–285) and was **still trending up** at 4M — hence the resume. The
-remaining drop-off is the water→lava→goal ferry (now the _only_ soft stage; key/door/right
-are ~100%). This is the headline DQN result — a big jump over the earlier 10–15%, driven by
-the **moderate-magnitude shaping + `n_step=5` + long low-ε consolidation tail**.
+**DQN 12M greedy stage cascade (eval, 50 eps, seed 9999):** key 100% → door 100% → right
+100% → water 100% → lava 98% → **goal 94%** (mean return 311, mean length 46). The 4M run
+was only **52%** (goal) and still climbing; resuming to **12M** (202 min total) lifted it to
+94% — so DQN's ComplexEnv result is a **sample-efficiency story, not a capability ceiling**:
+it reaches near-solve but needs ~13× the env steps PPO did (~0.9M). Driven by the
+**moderate-magnitude shaping + `n_step=5` + long low-ε consolidation tail + PER**.
 
 ---
 
@@ -167,21 +167,22 @@ Core failure mode = **camping local optima**: the greedy policy reaches the last
 milestone and idles to timeout (banked reward + small step penalty beats the long/risky
 next stage). Countered with the pull-forward staircase + exploration/replay tooling.
 
-| Run          | Change                                                                                    | Result                                                                                                                           |
-| ------------ | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Base         | single RGB, event shaping, `reward_scale`, n-step, Double-DQN, MPS                        | key/door learned; door→right stalled                                                                                             |
-| Capacity     | `width_mult` 1→2 (0.5M→2M) + `n_envs=8`                                                   | **cracked door→right** — capacity+exploration wall, not shaping                                                                  |
-| N+1          | pull-forward (water 20, lava 25, goal 120, key_drop 15); `feat_hw` 5×5→8×8                | water 55–80%; first goal touches; camping recurred **post-water** (~+50 plateau)                                                 |
-| N+2          | ε-floor 0.20 / decay 400k; `max_steps` 300→200; `n_step` 3→5; 600k                        | train `succ20` 25% in tail — but **greedy eval 0%** (key 72, water 4, lava/goal 0)                                               |
-| diag         | fixed-ε sweep on N+2 model                                                                | greedy ≪ exploratory: early chain **trap-bound** (tiny ε fixes key 72→92); **ferry ~0% at every ε**                              |
-| N+3          | (A) ε→0.05 / 700k anneal; (B) prioritized replay                                          | A+B **regressed** (PER + aggressive `reward_scale` → recency bias). PER **fixed** with a scale-robust **max-tree**               |
-| tooling      | max-tree PER; within-episode **ε-ramp**; escalating **stall penalty**; `lava_death=0`     | stall penalty **backfired** (n-step smeared it onto good actions) → removed; ε-ramp + `lava_death=0` kept                        |
-| **`160743`** | ε→0.05 with **~200k low-ε tail**, per-bucket water, ε-ramp, PER, 900k                     | **FIRST nonzero greedy: 10%** (key92 door86 right76 water26 lava14 goal10). The **low-ε tail** consolidated greedy               |
-| ε-sweep      | fixed-ε eval on `160743`                                                                  | greedy **11%**, **15% @ ε=0.05** (best), 14% @0.10, 9% @0.15. No longer trap-bound (key 91%); ceiling = the funnel               |
-| regression   | added `water_pickup_once` (reward only 1st of 3 buckets)                                  | **ferry → 0%**: per-bucket roaming was **load-bearing exploration**. **Reverted** to per-bucket                                  |
-| variance     | `n_step=8` + big rewards (goal 300)                                                       | **regressed** — high-magnitude n-step targets inflated value variance, destabilised the tail                                     |
-| friend-adopt | peer's **moderate** magnitudes (goal 160, water 30, lava 50, `lava_death` 8), `n_step=5`  | peer reached **28% greedy**; matching magnitudes closed most of our 14%→28% gap                                                  |
-| **4M run**   | final config (moderate magnitudes, `n_step=5`, PER, ε-ramp, 700k→0.075 + 3.3M low-ε tail) | **52% greedy** (key96 door94 right90 water62 lava54 goal52); train `succ20` still trending up at 4M → **resumed** for more steps |
+| Run          | Change                                                                                    | Result                                                                                                                               |
+| ------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Base         | single RGB, event shaping, `reward_scale`, n-step, Double-DQN, MPS                        | key/door learned; door→right stalled                                                                                                 |
+| Capacity     | `width_mult` 1→2 (0.5M→2M) + `n_envs=8`                                                   | **cracked door→right** — capacity+exploration wall, not shaping                                                                      |
+| N+1          | pull-forward (water 20, lava 25, goal 120, key_drop 15); `feat_hw` 5×5→8×8                | water 55–80%; first goal touches; camping recurred **post-water** (~+50 plateau)                                                     |
+| N+2          | ε-floor 0.20 / decay 400k; `max_steps` 300→200; `n_step` 3→5; 600k                        | train `succ20` 25% in tail — but **greedy eval 0%** (key 72, water 4, lava/goal 0)                                                   |
+| diag         | fixed-ε sweep on N+2 model                                                                | greedy ≪ exploratory: early chain **trap-bound** (tiny ε fixes key 72→92); **ferry ~0% at every ε**                                  |
+| N+3          | (A) ε→0.05 / 700k anneal; (B) prioritized replay                                          | A+B **regressed** (PER + aggressive `reward_scale` → recency bias). PER **fixed** with a scale-robust **max-tree**                   |
+| tooling      | max-tree PER; within-episode **ε-ramp**; escalating **stall penalty**; `lava_death=0`     | stall penalty **backfired** (n-step smeared it onto good actions) → removed; ε-ramp + `lava_death=0` kept                            |
+| **`160743`** | ε→0.05 with **~200k low-ε tail**, per-bucket water, ε-ramp, PER, 900k                     | **FIRST nonzero greedy: 10%** (key92 door86 right76 water26 lava14 goal10). The **low-ε tail** consolidated greedy                   |
+| ε-sweep      | fixed-ε eval on `160743`                                                                  | greedy **11%**, **15% @ ε=0.05** (best), 14% @0.10, 9% @0.15. No longer trap-bound (key 91%); ceiling = the funnel                   |
+| regression   | added `water_pickup_once` (reward only 1st of 3 buckets)                                  | **ferry → 0%**: per-bucket roaming was **load-bearing exploration**. **Reverted** to per-bucket                                      |
+| variance     | `n_step=8` + big rewards (goal 300)                                                       | **regressed** — high-magnitude n-step targets inflated value variance, destabilised the tail                                         |
+| friend-adopt | peer's **moderate** magnitudes (goal 160, water 30, lava 50, `lava_death` 8), `n_step=5`  | peer reached **28% greedy**; matching magnitudes closed most of our 14%→28% gap                                                      |
+| **4M run**   | final config (moderate magnitudes, `n_step=5`, PER, ε-ramp, 700k→0.075 + 3.3M low-ε tail) | **52% greedy** (key96 door94 right90 water62 lava54 goal52); train `succ20` still trending up at 4M → **resumed**                    |
+| **12M run**  | same config, resumed to 12M env steps (202 min total)                                     | **94% greedy** (key100 door100 right100 water100 lava98 goal94), mean return 311 — near-solve; the ferry closes with more low-ε tail |
 
 ### 5.4 REINFORCE — greedy-vs-stochastic gap that MC can't close (SimpleRoom)
 
@@ -260,9 +261,11 @@ the fast DQN. What actually fixed it (beyond LR-anneal, which alone was too slow
   training more _at that floor_ produced the first nonzero greedy eval (10%); a permanent
   0.20 floor stayed at **0% greedy**. Post-tail the greedy policy is no longer trap-bound
   (key 91% vs 72%).
-- **The remaining DQN ceiling is a multiplicative funnel, not traps.** Greedy cascade
-  `right 70% → water 28% → lava 13% → goal 11%`, each stage ~halving; per-stage quality
-  compounds into a low end-to-end rate.
+- **The multiplicative funnel is a _sample-efficiency_ wall, not a hard ceiling.** At ~1M
+  steps the greedy cascade was `right 70% → water 28% → lava 13% → goal 11%` (each stage
+  ~halving); per-stage quality compounds. But it is _not_ a capability limit — resuming the
+  same config to **12M closed the funnel to key100/door100/right100/water100/lava98/goal94**.
+  Each stage just needs enough low-ε consolidation; DQN gets there, only ~13× slower than PPO.
 - **"Hoard-as-exploration" (subtle, load-bearing):** rewarding **each** of the 3 water
   balls keeps the agent roaming the lava corner with water in hand — which is _how the rare
   toggle-extinguish gets discovered_. A "cleaner" first-bucket-only reward removed that
@@ -305,10 +308,10 @@ the fast DQN. What actually fixed it (beyond LR-anneal, which alone was too slow
 - **DQN / SimpleRoom:** RGB `64×64`; `lr≈2.8e-4`, `γ=0.95`, `batch=128`, `train_freq=1`,
   **`gradient_steps=4`** (with `n_envs=8`), `τ=0.001`, `eps_end=0.15`, `eps_decay=20k`,
   `learning_starts=1k`, Double DQN → **100% greedy** in 60k steps (~30k updates, mean len 9).
-- **DQN / ComplexEnv (4M final):** RGB `64×64`, `width_mult=2`, `n_extra_conv=1`,
+- **DQN / ComplexEnv (12M final → 94% greedy):** RGB `64×64`, `width_mult=2`, `n_extra_conv=1`,
   `n_step=5`, `lr=2.5e-4`, `γ=0.99`, `reward_scale=0.02`, `train_freq=4`, `τ=0.005`,
-  PER (max-tree), `n_envs=8`, ε `1.0→0.075` over 700k + ~3.3M low-ε tail, progress-gated
-  within-episode ε-ramp; shaping magnitudes in §3.
+  PER (max-tree), `n_envs=8`, ε `1.0→0.075` over 700k + long low-ε tail, progress-gated
+  within-episode ε-ramp; shaping magnitudes in §3. (4M → 52%; the extra steps close the ferry.)
 - **REINFORCE (hardened):** `entropy_coef=0.05`, `lr=3e-4`, `episodes_per_update=16`,
   `γ=0.99`, return-normalized, entropy bonus.
 - **PPO:** `lr=2.5e-4` (**annealed → 0**), `γ=0.99`, GAE `λ=0.95`, `clip=0.2`,
@@ -321,13 +324,24 @@ the fast DQN. What actually fixed it (beyond LR-anneal, which alone was too slow
 
 **Training / results**
 
-- [ ] DQN 4M ComplexEnv run — let finish; record final greedy % + stage cascade.
-- [ ] REINFORCE — real runs on **both** envs with hardened defaults; confirm no collapse.
-- [ ] PPO — real runs on **both** envs (LR-anneal + longer); close the greedy gap on
-      SimpleRoom, then ComplexEnv.
-- [ ] All required plots for **every algorithm × env** (return, length, success, loss,
-      cumulative-steps).
-- [ ] ComplexEnv stage-progress analysis (cascade rates) per algorithm.
+- [x] **SimpleRoom all solved:** DQN **100%** greedy, PPO **100%** greedy; REINFORCE ~85%
+      sampled (greedy-gap finding, §5.4). Runs exported to `results/`.
+- [x] DQN ComplexEnv — **94% greedy at 12M** (202 min); resumed from the 4M/52% checkpoint.
+- [x] **PPO ComplexEnv** — **98% greedy at 1.6M** steps (goal/lava/water 98%, mean len 47);
+      exported. **~13× more sample-efficient than DQN** (which needed 12M for 94%).
+- [ ] **REINFORCE ComplexEnv** — tuned `scripts/train_reinforce_complex.py` ready (same
+      levers as PPO-complex, 2M budget). Expect an early-stage plateau; run for the
+      stage-progress analysis + family comparison. Run _after_ PPO-complex (avoid MPS contention).
+- [x] All required plots per run (return, length, success, loss, cumulative-steps) via
+      `run_training`; plus **report figures** via `scripts/make_figures.py` (latest run per
+      env×algo): a **comprehensive per-run overview** (training curves + stage-cascade +
+      greedy-eval histograms in one figure), standalone **stage-cascade** + eval histograms,
+      and cross-run **sample-efficiency overlay**, **stage-cascade bars**, **inference bars**,
+      **greedy-vs-stochastic bars** → `results/_figures/`. `--with-agent` re-evals from
+      `agent.pt` (no retrain). Run _after_ `export_results.py` (it overwrites the overview).
+- [x] ComplexEnv stage-progress analysis (cascade rates) per algorithm — the stage-cascade
+      figures show the chain unlocking (DQN: key/door/right early → water → lava → goal).
+- [x] Video curation: `export_results.py --videos 4` keeps 4 evenly-spaced clips per run.
 
 **Inference / comparison**
 

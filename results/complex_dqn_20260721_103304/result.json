@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-21T14:00:08.091824+00:00",
+  "generated": "2026-07-22T12:31:37.501422+00:00",
   "config": {
-    "steps": 4000000,
+    "steps": 12000000,
     "max_steps": 200,
     "n_step": 5,
     "lr": 0.00025,
@@ -29,20 +29,20 @@
     "device": "mps"
   },
   "eval": {
-    "mean_return": 178.90100000000007,
-    "std_return": 148.14696030968707,
-    "mean_length": 113.98,
-    "success_rate": 0.52,
+    "mean_return": 310.87799999999993,
+    "std_return": 67.48944373752104,
+    "mean_length": 46.44,
+    "success_rate": 0.94,
     "n_episodes": 50.0,
-    "stage_key": 0.96,
-    "stage_door": 0.94,
-    "stage_right": 0.9,
-    "stage_water": 0.62,
-    "stage_lava": 0.54,
-    "stage_goal": 0.52
+    "stage_key": 1.0,
+    "stage_door": 1.0,
+    "stage_right": 1.0,
+    "stage_water": 1.0,
+    "stage_lava": 0.98,
+    "stage_goal": 0.94
   },
-  "minutes": 386.9,
+  "minutes": 202.1,
   "interrupted": false,
-  "episodes": 29119,
-  "steps": 4000000
+  "episodes": 163410,
+  "steps": 12000000
 }

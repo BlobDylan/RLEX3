@@ -94,11 +94,17 @@ class BaseAlgorithm(ABC):
         n_episodes: int = 10,
         max_steps: int | None = None,
         seed: int | None = None,
+        explore: bool = False,
+        return_episodes: bool = False,
     ) -> dict[str, float]:
-        """Roll out ``n_episodes`` greedily and return mean / std return + success rate.
+        """Roll out ``n_episodes`` and return mean / std return + success rate.
 
-        If the env puts ``stage_*`` / ``success`` in ``info`` (ComplexEnv), those are
-        used instead of treating every ``terminated`` as a win (lava death).
+        ``explore=False`` (default) acts greedily (argmax); ``True`` samples the policy
+        (for the greedy-vs-stochastic comparison). If ``return_episodes`` is set, the
+        per-episode ``episode_returns`` / ``episode_lengths`` / ``episode_successes`` lists
+        are included (for histograms). If the env puts ``stage_*`` / ``success`` in
+        ``info`` (ComplexEnv), those are used instead of treating every ``terminated`` as a
+        win (lava death).
         """
         stage_keys = (
             "stage_key",
@@ -121,7 +127,7 @@ class BaseAlgorithm(ABC):
             ep_len = 0
 
             while not done:
-                action = self.select_action(obs, explore=False)
+                action = self.select_action(obs, explore=explore)
                 obs, reward, terminated, truncated, info = env.step(action)
                 ep_return += float(reward)
                 ep_len += 1
@@ -152,6 +158,10 @@ class BaseAlgorithm(ABC):
         if saw_stages:
             for k, vals in stage_hits.items():
                 out[k] = float(np.mean(vals))
+        if return_episodes:
+            out["episode_returns"] = returns
+            out["episode_lengths"] = [float(x) for x in lengths]
+            out["episode_successes"] = successes
         return out
 
     def to_tensor(self, obs: np.ndarray) -> torch.Tensor:

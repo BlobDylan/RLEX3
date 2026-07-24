@@ -17,6 +17,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -35,7 +36,23 @@ def derive_run_name(run_path: Path) -> str:
     return run_path.name
 
 
-def export(run_path: Path, results_dir: Path, name: str | None, overwrite: bool) -> Path:
+def _video_step(f: Path) -> int:
+    """Numeric milestone from ``rollout_<N>k.mp4`` for correct ordering (5k < 100k)."""
+    m = re.search(r"(\d+)k", f.stem)
+    return int(m.group(1)) if m else 0
+
+
+def _pick_evenly(items: list, n: int) -> list:
+    """Keep ``n`` evenly-spaced items (first, last, and n-2 between). n<=0 keeps all."""
+    length = len(items)
+    if n <= 0 or length <= n:
+        return items
+    idx = sorted({round(i * (length - 1) / (n - 1)) for i in range(n)})
+    return [items[i] for i in idx]
+
+
+def export(run_path: Path, results_dir: Path, name: str | None, overwrite: bool,
+           n_videos_keep: int = 4) -> Path:
     if not run_path.is_dir():
         raise SystemExit(f"error: not a directory: {run_path}")
 
@@ -58,14 +75,16 @@ def export(run_path: Path, results_dir: Path, name: str | None, overwrite: bool)
             shutil.copy2(f, graphs_dest / f.name)
             n_graphs += 1
 
-    # Rollout videos: anything under the run's videos/ (or video files at the root).
-    n_videos = 0
-    video_sources = list((run_path / "videos").glob("*")) if (run_path / "videos").is_dir() else []
-    video_sources += [f for f in run_path.iterdir() if f.is_file() and f.suffix.lower() in VIDEO_EXTS]
-    for f in video_sources:
-        if f.is_file() and f.suffix.lower() in VIDEO_EXTS:
-            shutil.copy2(f, videos_dest / f.name)
-            n_videos += 1
+    # Rollout videos: curate to n_videos_keep evenly-spaced clips (first, last, + between)
+    # so the report isn't flooded with 100+ mp4s. n_videos_keep<=0 keeps all.
+    vids = [f for f in (run_path / "videos").glob("*")
+            if f.is_file() and f.suffix.lower() in VIDEO_EXTS] if (run_path / "videos").is_dir() else []
+    vids += [f for f in run_path.iterdir() if f.is_file() and f.suffix.lower() in VIDEO_EXTS]
+    vids = sorted(vids, key=_video_step)
+    kept = _pick_evenly(vids, n_videos_keep)
+    for f in kept:
+        shutil.copy2(f, videos_dest / f.name)
+    n_videos = len(kept)
 
     # Small summary (config + eval), explicitly NOT weights or history.
     summary = run_path / "result.json"
@@ -85,8 +104,10 @@ def main() -> None:
     p.add_argument("--name", type=str, default=None, help="override results/<name> (default: <algo>_<timestamp>)")
     p.add_argument("--results-dir", type=str, default=str(ROOT / "results"))
     p.add_argument("--overwrite", action="store_true", help="replace results/<name> if it exists")
+    p.add_argument("--videos", type=int, default=4,
+                   help="how many evenly-spaced rollout videos to keep (0 = all; default 4)")
     a = p.parse_args()
-    export(Path(a.run_path).resolve(), Path(a.results_dir).resolve(), a.name, a.overwrite)
+    export(Path(a.run_path).resolve(), Path(a.results_dir).resolve(), a.name, a.overwrite, a.videos)
 
 
 if __name__ == "__main__":
