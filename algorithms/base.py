@@ -184,23 +184,43 @@ class BaseAlgorithm(ABC):
 
     @staticmethod
     def _info_at(infos: Any, i: int) -> dict:
-        """Pull the i-th env's info dict from a (Sync)VectorEnv info payload."""
+        """Pull the i-th env's info dict from a (Sync)VectorEnv info payload.
+
+        Handles both info layouts: a plain list/tuple of per-env dicts, and the
+        gymnasium dict-of-arrays payload. For done envs the terminal info lives in
+        ``final_info`` which itself may be an array-of-dicts (older) or a
+        dict-of-arrays (SAME_STEP autoreset) — both are merged in.
+        """
         if isinstance(infos, (list, tuple)):
             return dict(infos[i] or {})
         if not isinstance(infos, dict):
             return {}
-        if "final_info" in infos:  # gymnasium>=0.26 uses final_info for done envs
-            fi = infos["final_info"]
-            if fi is not None and i < len(fi) and fi[i] is not None:
-                return dict(fi[i])
+
         out: dict = {}
         for k, v in infos.items():
-            if k in ("final_observation", "final_info", "_final_observation", "_final_info"):
+            if k.startswith("_") or k in ("final_observation", "final_obs", "final_info"):
                 continue
             try:
                 out[k] = v[i]
             except Exception:
                 continue
+
+        fi = infos.get("final_info")
+        if isinstance(fi, dict):  # dict-of-arrays (SAME_STEP autoreset)
+            for k, v in fi.items():
+                if k.startswith("_"):
+                    continue
+                try:
+                    out[k] = v[i]
+                except Exception:
+                    continue
+        elif fi is not None:  # array/list of per-env dicts
+            try:
+                d = fi[i]
+                if isinstance(d, dict):
+                    out.update(d)
+            except Exception:
+                pass
         return out
 
     @staticmethod

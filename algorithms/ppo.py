@@ -21,19 +21,29 @@ import torch.nn.functional as F
 from torch.optim import Adam
 
 from .base import BaseAlgorithm
-from .networks import CNNEncoder
+from .networks import CNNEncoder, orthogonal_init_
 
 
 class ActorCritic(nn.Module):
-    """Shared CNN encoder -> {policy logits, state value}."""
+    """Shared CNN encoder -> {policy logits, state value}.
 
-    def __init__(self, obs_shape, n_actions, *, width_mult=1, n_extra_conv=0, fc_mult=1) -> None:
+    ``orthogonal=True`` (PPO default) uses ``sqrt(2)`` orthogonal init on the trunk, a
+    tiny ``0.01`` gain on the policy head (near-uniform initial policy) and ``1.0`` on the
+    value head — the standard PPO scheme that speeds and stabilises early convergence.
+    """
+
+    def __init__(self, obs_shape, n_actions, *, width_mult=1, n_extra_conv=0, fc_mult=1,
+                 orthogonal=True) -> None:
         super().__init__()
         self.encoder = CNNEncoder(
-            obs_shape, width_mult=width_mult, n_extra_conv=n_extra_conv, fc_mult=fc_mult
+            obs_shape, width_mult=width_mult, n_extra_conv=n_extra_conv, fc_mult=fc_mult,
+            orthogonal=orthogonal,
         )
         self.pi = nn.Linear(self.encoder.out_dim, n_actions)
         self.v = nn.Linear(self.encoder.out_dim, 1)
+        if orthogonal:
+            orthogonal_init_(self.pi, gain=0.01)
+            orthogonal_init_(self.v, gain=1.0)
 
     def forward(self, x: torch.Tensor):
         z = self.encoder(x)
@@ -55,12 +65,15 @@ class PPO(BaseAlgorithm):
         lr: float = 2.5e-4,
         clip_coef: float = 0.2,
         ent_coef: float = 0.01,
+        ent_coef_final: float | None = None,
+        ent_anneal_steps: int = 0,
         vf_coef: float = 0.5,
         max_grad_norm: float = 0.5,
         rollout_steps: int = 128,
         update_epochs: int = 4,
         num_minibatches: int = 4,
         n_envs: int = 8,
+        reward_scale: float = 1.0,
         anneal_lr: bool = True,
         width_mult: int = 1,
         n_extra_conv: int = 0,
@@ -71,12 +84,19 @@ class PPO(BaseAlgorithm):
         self.gae_lambda = float(gae_lambda)
         self.clip_coef = float(clip_coef)
         self.ent_coef = float(ent_coef)
+        # Entropy anneal (PPO analogue of ε-decay): full exploration pressure while the
+        # policy is discovering the task, decaying to a small floor for greedy consolidation.
+        self.ent_coef_final = float(ent_coef if ent_coef_final is None else ent_coef_final)
+        self.ent_anneal_steps = int(ent_anneal_steps)
         self.vf_coef = float(vf_coef)
         self.max_grad_norm = float(max_grad_norm)
         self.rollout_steps = int(rollout_steps)
         self.update_epochs = int(update_epochs)
         self.num_minibatches = int(num_minibatches)
         self.n_envs = max(1, int(n_envs))
+        # Scale shaped rewards so value targets stay ~O(1) (large raw rewards make the
+        # critic noisy). Reported episode returns stay RAW (unscaled) for readable plots.
+        self.reward_scale = float(reward_scale)
         # Linearly decay lr -> 0 over training (CleanRL-style): lets the policy COMMIT to
         # deterministic actions late so the greedy/argmax policy matches the stochastic one.
         self.anneal_lr = bool(anneal_lr)
@@ -89,6 +109,13 @@ class PPO(BaseAlgorithm):
 
     def n_parameters(self) -> int:
         return sum(p.numel() for p in self.net.parameters())
+
+    def current_ent_coef(self) -> float:
+        """Linearly annealed entropy coefficient for the current ``total_steps``."""
+        if self.ent_anneal_steps <= 0:
+            return self.ent_coef
+        t = min(1.0, self.total_steps / self.ent_anneal_steps)
+        return self.ent_coef + t * (self.ent_coef_final - self.ent_coef)
 
     # ------------------------------------------------------------------
     # Acting
@@ -123,10 +150,16 @@ class PPO(BaseAlgorithm):
         **kwargs: Any,
     ) -> dict[str, list[float]]:
         import gymnasium as gym
+        from gymnasium.vector import AutoresetMode
 
         n_envs = self.n_envs if n_envs is None else max(1, int(n_envs))
         T = self.rollout_steps
-        envs = gym.vector.SyncVectorEnv([env_fn for _ in range(n_envs)])
+        # SAME_STEP autoreset: the ended episode's true final obs is exposed in
+        # ``infos['final_obs']`` (and its info in ``final_info``), so timed-out episodes
+        # can bootstrap from V(final_obs) instead of being treated as real terminals.
+        envs = gym.vector.SyncVectorEnv(
+            [env_fn for _ in range(n_envs)], autoreset_mode=AutoresetMode.SAME_STEP
+        )
         history = self._new_history()
         recent_returns: deque[float] = deque(maxlen=20)
         recent_success: deque[float] = deque(maxlen=20)
@@ -156,8 +189,23 @@ class PPO(BaseAlgorithm):
                     action, logp, value = self._policy_value(obs_t)
                 actions = action.cpu().numpy()
 
-                next_obss, rewards, terminateds, truncateds, infos = envs.step(actions)
+                next_obss, rewards_raw, terminateds, truncateds, infos = envs.step(actions)
+                rewards = rewards_raw.astype(np.float32) * self.reward_scale
                 dones = np.logical_or(terminateds, truncateds)
+
+                # A timeout (truncated, not terminated) is not a real terminal: fold
+                # gamma*V(true final obs) into that step's reward so GAE bootstraps it
+                # correctly instead of assuming zero future value.
+                trunc_only = np.logical_and(truncateds, np.logical_not(terminateds))
+                if trunc_only.any():
+                    fo = infos.get("final_obs", infos.get("final_observation"))
+                    if fo is not None:
+                        idx = np.nonzero(trunc_only)[0]
+                        fobs = np.stack([np.asarray(fo[i]) for i in idx])
+                        with torch.no_grad():
+                            fx = torch.from_numpy(fobs).to(self.device, torch.float32)
+                            _, fval = self.net(fx)
+                        rewards[idx] += self.gamma * fval.cpu().numpy()
 
                 obs_store[t] = obss
                 act_store[t] = actions
@@ -166,7 +214,7 @@ class PPO(BaseAlgorithm):
                 rew_store[t] = rewards
                 done_store[t] = dones.astype(np.float32)
 
-                ep_returns += rewards
+                ep_returns += rewards_raw  # report RAW (unscaled) episode returns
                 ep_lens += 1
                 self.total_steps += n_envs
 
@@ -225,6 +273,7 @@ class PPO(BaseAlgorithm):
         n = b_obs.shape[0]
         mb_size = max(1, n // self.num_minibatches)
         idx = np.arange(n)
+        ent_coef = self.current_ent_coef()
         last_loss = 0.0
         for _ in range(self.update_epochs):
             np.random.shuffle(idx)
@@ -241,7 +290,7 @@ class PPO(BaseAlgorithm):
                 pg2 = -adv * torch.clamp(ratio, 1.0 - self.clip_coef, 1.0 + self.clip_coef)
                 pg_loss = torch.max(pg1, pg2).mean()
                 v_loss = F.mse_loss(value, b_ret[mb])
-                loss = pg_loss + self.vf_coef * v_loss - self.ent_coef * entropy
+                loss = pg_loss + self.vf_coef * v_loss - ent_coef * entropy
 
                 self.optimizer.zero_grad(set_to_none=True)
                 loss.backward()

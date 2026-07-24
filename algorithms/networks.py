@@ -22,12 +22,25 @@ def _is_channels_last(shape: tuple[int, ...]) -> bool:
     return c <= 16 and h > c and w > c
 
 
+def orthogonal_init_(layer: nn.Module, gain: float = 2.0 ** 0.5, bias: float = 0.0) -> nn.Module:
+    """Orthogonal weight init with zeroed bias — the standard PPO init. ``gain=sqrt(2)``
+    for ReLU trunks; small gains (e.g. 0.01) on a policy head keep the initial policy
+    near-uniform, which stabilises and speeds early on-policy convergence."""
+    nn.init.orthogonal_(layer.weight, gain)
+    if getattr(layer, "bias", None) is not None:
+        nn.init.constant_(layer.bias, bias)
+    return layer
+
+
 class CNNEncoder(nn.Module):
     """Conv trunk -> fixed spatial map -> flat feature vector of size ``out_dim``.
 
     ``out_dim == 256 * width_mult * fc_mult``. Matches DQN's trunk: three strided
     convs (+ ``n_extra_conv`` same-resolution convs), a bilinear resize to an 8x8
     grid-aligned map (MPS-safe, avoids adaptive-pool constraints), then one FC layer.
+
+    ``orthogonal=True`` applies ``sqrt(2)`` orthogonal init to every conv/linear (PPO
+    convention). Left ``False`` by default so DQN/REINFORCE keep PyTorch's default init.
     """
 
     def __init__(
@@ -38,6 +51,7 @@ class CNNEncoder(nn.Module):
         n_extra_conv: int = 0,
         fc_mult: int = 1,
         feat_hw: tuple[int, int] = (8, 8),
+        orthogonal: bool = False,
     ) -> None:
         super().__init__()
         self.channels_last = _is_channels_last(obs_shape)
@@ -60,6 +74,10 @@ class CNNEncoder(nn.Module):
             nn.Linear(c3 * self.feat_hw[0] * self.feat_hw[1], self.out_dim),
             nn.ReLU(),
         )
+        if orthogonal:
+            for m in self.modules():
+                if isinstance(m, (nn.Conv2d, nn.Linear)):
+                    orthogonal_init_(m)
 
     def _nchw(self, x: torch.Tensor) -> torch.Tensor:
         if self.channels_last:

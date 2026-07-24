@@ -97,11 +97,11 @@ Event-based only (no geometry). Small anti-farm milestone bonuses guide explorat
 
 ### SimpleRoom (sanity check)
 
-| Algo      | Greedy success  | Notes                                                                      |
-| --------- | --------------- | -------------------------------------------------------------------------- |
-| DQN       | **~90–100%**    | Exp6/6b winner hypers; PASSED sanity check                                 |
-| REINFORCE | ~4% (collapsed) | entropy collapse; defaults hardened, re-run pending                        |
-| PPO       | ~4–6% greedy    | greedy-vs-stochastic gap (stochastic ~76%); LR-anneal fix + re-run pending |
+| Algo      | Greedy success  | Notes                                                        |
+| --------- | --------------- | ------------------------------------------------------------ |
+| DQN       | **~90–100%**    | Exp6/6b winner hypers; PASSED sanity check                   |
+| REINFORCE | ~4% (collapsed) | entropy collapse; defaults hardened, re-run pending          |
+| PPO       | **100%**        | **solved** — 100% greedy, converges ~23–30k steps (see §5.5) |
 
 ### ComplexEnv (hard task)
 
@@ -217,8 +217,26 @@ argmax.
 
 **Fixes applied:** (1) **linear LR annealing → 0** (CleanRL-style, `anneal_lr=True`) so
 the policy commits to deterministic actions late; (2) default SimpleRoom budget **300k →
-1M**. Re-run pending. **Report angle:** greedy-vs-stochastic gap is a general deployment
-pitfall — the training (stochastic) metric overstates the deployable (greedy) policy.
+1M**. **Report angle:** greedy-vs-stochastic gap is a general deployment pitfall — the
+training (stochastic) metric overstates the deployable (greedy) policy.
+
+**RESOLVED (fast-convergence PPO).** A friend's proven recipe pointed at the real levers,
+now implemented in our PPO + `scripts/train_ppo_simple.py`: **100% greedy eval, converges to
+100% training `succ20` by ~23k steps** (first 90% at ~10k), mean solve length ~10 — matching
+the fast DQN. What actually fixed it (beyond LR-anneal, which alone was too slow):
+
+1. **Orthogonal init with a tiny (0.01) policy-head gain** — near-uniform initial policy;
+   the policy then sharpens to a _deterministic_ optimum instead of relying on sampling.
+   This is the single biggest fix for the greedy gap.
+2. **Entropy annealing** (0.01 → 0.002 over ~15k) — the PPO analogue of ε-decay: explore
+   while discovering, consolidate greedily after (annealing to _0_ collapses prematurely).
+3. **Reward scaling** (×0.1; shaped goal ≈50 → value targets ~O(5)) — a stable critic.
+4. **Truncation bootstrap** — SAME_STEP autoreset + `γ·V(true final obs)` on timeouts. In
+   SimpleRoom nearly every early episode times out at 100 steps; treating those as _true_
+   terminals (V=0) systematically poisons the critic. This was the correctness bug that
+   kept our first attempt ~2× slower than the friend's.
+5. **Small frequent rollouts** (32×8 = 256) + **lr 6e-4** — many updates/step, the driver
+   of fast convergence on this short-horizon dense task. γ=0.95, 5 epochs, clip 0.2.
 
 ---
 
