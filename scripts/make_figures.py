@@ -118,7 +118,7 @@ def fig_stage_cascade(run_dir: Path):
     if loaded is None:
         return None
     h, _, env, algo = loaded
-    if not h.get("stage_goal") or not any(h["stage_goal"]):
+    if not any(any(h.get(sk, [])) for sk in STAGES):
         return None
     steps = np.asarray(h["steps"], dtype=float)
     fig, ax = plt.subplots(figsize=(7, 4))
@@ -146,7 +146,7 @@ def fig_overview(run_dir: Path, greedy_eval: dict | None = None):
     loss = np.asarray(h.get("loss", []), dtype=float)
     ep = np.arange(1, ret.size + 1)
     w = max(20, ret.size // 500)
-    has_stage = bool(h.get("stage_goal")) and any(h["stage_goal"])
+    has_stage = any(any(h.get(sk, [])) for sk in STAGES)
 
     panels: list[tuple[str, str, object]] = []  # (title, xlabel, draw)
 

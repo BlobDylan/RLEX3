@@ -21,11 +21,11 @@ from-scratch algorithms.
 | `SimpleRoomEnv` | empty 10×10 room (sanity check)         | step onto the green goal                                     |
 | `ComplexEnv`    | key → locked door → water → lava → goal | ferry water to extinguish the lava ring, then reach the goal |
 
-| Algorithm | Family       | Status                                                                             |
-| --------- | ------------ | ---------------------------------------------------------------------------------- |
-| DQN       | value-based  | ComplexEnv **94% greedy** at 12M; SimpleRoom **100%**                              |
-| REINFORCE | policy-based | SimpleRoom **~85% sampled** but greedy degenerate (§5.4)                           |
-| PPO       | actor-critic | ComplexEnv **98% greedy** at **1.6M** (≈13× fewer steps than DQN); SimpleRoom 100% |
+| Algorithm | Family       | Status                                                                                                                  |
+| --------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| DQN       | value-based  | ComplexEnv **94% greedy** at 12M; SimpleRoom **100%**                                                                   |
+| REINFORCE | policy-based | ComplexEnv: reached **~100% stochastic then COLLAPSED to 0%** (§5.6); SimpleRoom ~85% sampled, greedy degenerate (§5.4) |
+| PPO       | actor-critic | ComplexEnv **98% greedy** at **1.6M** (≈13× fewer steps than DQN); SimpleRoom 100%                                      |
 
 ### Assignment constraints & grading levers (from the brief)
 
@@ -105,11 +105,11 @@ Event-based only (no geometry). Small anti-farm milestone bonuses guide explorat
 
 ### ComplexEnv (hard task)
 
-| Algo      | Greedy success       | Notes                                                                     |
-| --------- | -------------------- | ------------------------------------------------------------------------- |
-| DQN       | **94%** (goal) @ 12M | full chain solved; key→right 100%, lava 98%, goal 94%; ~13× PPO's samples |
-| REINFORCE | config ready         | tuned `train_reinforce_complex.py`; expect early-stage plateau (§5.4)     |
-| PPO       | **98%** @ ~1.6M      | full chain (goal/lava/water 98%); **~13× more sample-efficient than DQN** |
+| Algo      | Greedy success            | Notes                                                                                                                            |
+| --------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| DQN       | **94%** (goal) @ 12M      | full chain solved; key→right 100%, lava 98%, goal 94%; ~13× PPO's samples                                                        |
+| REINFORCE | **0% greedy** (collapsed) | reached ~100% _stochastic_ on ALL stages by ~3.5M, then **catastrophically collapsed to 0%** at ~3.7M and never recovered (§5.6) |
+| PPO       | **98%** @ ~1.6M           | full chain (goal/lava/water 98%); **~13× more sample-efficient than DQN**                                                        |
 
 **DQN 12M greedy stage cascade (eval, 50 eps, seed 9999):** key 100% → door 100% → right
 100% → water 100% → lava 98% → **goal 94%** (mean return 311, mean length 46). The 4M run
@@ -248,6 +248,28 @@ the fast DQN. What actually fixed it (beyond LR-anneal, which alone was too slow
 5. **Small frequent rollouts** (32×8 = 256) + **lr 6e-4** — many updates/step, the driver
    of fast convergence on this short-horizon dense task. γ=0.95, 5 epochs, clip 0.2.
 
+### 5.6 REINFORCE — solved ComplexEnv stochastically, then catastrophically collapsed
+
+**The surprise:** REINFORCE-with-baseline _did_ learn ComplexEnv. Its training stage cascade
+climbs the whole chain — key→door→right→water→lava→**goal all reach ~100%** (stochastic /
+sampled) by **~3.5M steps**. Then at **~3.7M it collapses to 0% on every stage simultaneously
+and never recovers** for the remaining ~3.5M steps. Final greedy eval = **0%** (the collapsed
+policy). See `results/complex_reinforce_.../graphs/stage_cascade.png`.
+
+**Mechanism:** classic REINFORCE instability — **no trust region**. A single high-variance
+Monte-Carlo update (or a run of them) moved the policy far enough to destroy it, and with
+on-policy data the now-degenerate policy generates only failures, so there's no gradient
+signal to climb back. This is _precisely_ the failure PPO's clipped surrogate prevents (it
+bounds each update). It also compounds the SimpleRoom greedy gap (§5.4): even at the ~3.5M
+peak the _greedy_ argmax was likely far worse than the sampled policy.
+
+**Report angle (strong):** the DQN→REINFORCE→PPO arc now has a sharp climax — REINFORCE can
+_reach_ the solution but **cannot hold it** (catastrophic forgetting from an untrusted update),
+DQN _holds_ it but needs ~13× the samples (deadly-triad / replay staleness), and PPO both
+reaches and holds it fastest (GAE variance reduction + clipping). A best-model checkpoint
+would have captured the ~3.5M peak; worth a re-run if we want a non-zero REINFORCE eval number,
+but the collapse itself is the more instructive result.
+
 ---
 
 ## 6. Key findings / lessons (report-ready)
@@ -329,9 +351,10 @@ the fast DQN. What actually fixed it (beyond LR-anneal, which alone was too slow
 - [x] DQN ComplexEnv — **94% greedy at 12M** (202 min); resumed from the 4M/52% checkpoint.
 - [x] **PPO ComplexEnv** — **98% greedy at 1.6M** steps (goal/lava/water 98%, mean len 47);
       exported. **~13× more sample-efficient than DQN** (which needed 12M for 94%).
-- [ ] **REINFORCE ComplexEnv** — tuned `scripts/train_reinforce_complex.py` ready (same
-      levers as PPO-complex, 2M budget). Expect an early-stage plateau; run for the
-      stage-progress analysis + family comparison. Run _after_ PPO-complex (avoid MPS contention).
+- [x] **REINFORCE ComplexEnv** — ran 7.15M steps. **Reached ~100% stochastic on all stages
+      by ~3.5M, then catastrophically collapsed to 0%** and never recovered (§5.6). Final
+      greedy eval 0%. Exported. (Optional re-run with best-model checkpointing to capture the
+      ~3.5M peak for a non-zero eval number.)
 - [x] All required plots per run (return, length, success, loss, cumulative-steps) via
       `run_training`; plus **report figures** via `scripts/make_figures.py` (latest run per
       env×algo): a **comprehensive per-run overview** (training curves + stage-cascade +
