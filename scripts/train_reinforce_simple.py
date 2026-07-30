@@ -39,7 +39,7 @@ from scripts._common import default_out_dir, make_env_fn, run_training
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--steps", type=int, default=120_000, help="env steps")
+    p.add_argument("--steps", type=int, default=1_000_000, help="env steps")
     p.add_argument("--max-steps", type=int, default=100)
     p.add_argument("--n-envs", type=int, default=8)
     p.add_argument("--lr", type=float, default=3e-4)
@@ -77,7 +77,7 @@ def main() -> None:
     run_training(
         agent, env_fn, out_dir,
         total_steps=a.steps, n_envs=a.n_envs, max_steps=a.max_steps, seed=a.seed,
-        video_every=5_000,
+        video_every=100_000,
         title="SimpleRoomEnv — REINFORCE",
         config_dict={**vars(a), "env": "simple"},
     )

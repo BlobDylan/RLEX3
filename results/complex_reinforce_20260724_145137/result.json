@@ -1,0 +1,39 @@
+{
+  "generated": "2026-07-24T14:45:40.449416+00:00",
+  "config": {
+    "steps": 20000000,
+    "max_steps": 200,
+    "n_envs": 8,
+    "lr": 0.0003,
+    "value_lr": 0.001,
+    "gamma": 0.99,
+    "entropy_coef": 0.05,
+    "ent_coef_final": 0.01,
+    "ent_anneal_steps": 1500000,
+    "episodes_per_update": 8,
+    "reward_scale": 0.02,
+    "width_mult": 2,
+    "n_extra_conv": 1,
+    "seed": 0,
+    "device": "mps",
+    "out": null,
+    "env": "complex"
+  },
+  "eval": {
+    "mean_return": -10.000000000000007,
+    "std_return": 0.0,
+    "mean_length": 200.0,
+    "success_rate": 0.0,
+    "n_episodes": 50.0,
+    "stage_key": 0.0,
+    "stage_door": 0.0,
+    "stage_right": 0.0,
+    "stage_water": 0.0,
+    "stage_lava": 0.0,
+    "stage_goal": 0.0
+  },
+  "minutes": 173.9,
+  "interrupted": true,
+  "episodes": 37364,
+  "steps": 7149296
+}

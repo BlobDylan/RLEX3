@@ -38,7 +38,7 @@ from scripts._common import default_out_dir, make_env_fn, run_training
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--steps", type=int, default=2_000_000, help="env steps (expect an early plateau)")
+    p.add_argument("--steps", type=int, default=20_000_000, help="env steps (expect an early plateau)")
     p.add_argument("--max-steps", type=int, default=200)
     p.add_argument("--n-envs", type=int, default=8)
     p.add_argument("--lr", type=float, default=3e-4)
@@ -79,6 +79,7 @@ def main() -> None:
         total_steps=a.steps, n_envs=a.n_envs, max_steps=a.max_steps, seed=a.seed,
         title="ComplexEnv — REINFORCE",
         config_dict={**vars(a), "env": "complex"},
+        video_every=500_000
     )
 
 
